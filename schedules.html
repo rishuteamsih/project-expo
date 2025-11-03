@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Campus Connect — Timetable (Student)</title>
+    <style>
+        /* keep same styles as your schedule file (viewer-focused) */
+        :root {
+            --bg-1: #f6fbfc;
+            --bg-2: #ffffff;
+            --muted: #6b7280;
+            --accent: #0ea5a1;
+            --accent-700: #028f88;
+            --glass: rgba(14, 165, 161, 0.06);
+            --card-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
+            --font: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(180deg, var(--bg-1) 0%, #eef9f9 100%);
+            color: #0f172a;
+            margin: 0;
+            padding: 20px;
+            font-family: var(--font);
+        }
+
+        .app {
+            max-width: 1100px;
+            margin: 10px auto;
+        }
+
+        header {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 14px
+        }
+
+        h1 {
+            font-size: 20px;
+            margin: 0;
+            color: var(--accent-700)
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+            align-items: center
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px
+        }
+
+        .card {
+            background: var(--bg-2);
+            padding: 14px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .calendar {
+            width: 300px
+        }
+
+        .month {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px
+        }
+
+        .cell {
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+            position: relative;
+            min-height: 46px;
+            background: transparent;
+            color: var(--muted)
+        }
+
+        .cell.today {
+            outline: 2px solid rgba(14, 165, 161, 0.18);
+            color: var(--accent-700);
+            font-weight: 700
+        }
+
+        .cell.selected::after {
+            content: "";
+            position: absolute;
+            bottom: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        .day-list {
+            flex: 1
+        }
+
+        /* UPDATED: slots container - show small rectangular tiles (grid) */
+        #slots-container {
+            margin-top: 12px;
+            display: grid;
+            gap: 10px;
+            /* responsive grid of small tiles; tiles are just big enough to show subject & time */
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            align-items: start;
+        }
+
+        /* UPDATED: each tile (small rectangular box) */
+        .slot-tile {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 6px;
+            padding: 10px;
+            height: 80px;
+            /* compact rectangle */
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(2, 6, 23, 0.06);
+            overflow: hidden;
+            word-break: break-word;
+        }
+
+        .slot-tile .subject {
+            font-weight: 700;
+            font-size: 14px;
+            line-height: 1.1;
+            max-height: 2.4em;
+            overflow: hidden;
+        }
+
+        .slot-tile .time {
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.65);
+        }
+
+        .small {
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        input,
+        select {
+            padding: 6px;
+            border-radius: 8px;
+            border: 1px solid rgba(2, 6, 23, 0.04);
+            background: transparent;
+            color: inherit
+        }
+
+        .section-select {
+            background: linear-gradient(180deg, rgba(3, 105, 100, 0.03), rgba(3, 105, 100, 0.01));
+            border: 1px solid rgba(2, 6, 23, 0.04);
+            padding: 7px 12px;
+            border-radius: 10px;
+            color: var(--muted);
+            min-width: 160px;
+            cursor: pointer;
+        }
+
+        @media(max-width:900px) {
+            .calendar {
+                width: 100%
+            }
+
+            /* On narrow screens, make tiles slightly taller for readability */
+            #slots-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .slot-tile {
+                height: 90px;
+                padding: 12px;
+            }
+        }
+
+        .btn {
+            background: linear-gradient(180deg, var(--accent), var(--accent-700));
+            padding: 8px 10px;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn.ghost {
+            background: transparent;
+            border: 1px solid rgba(16, 24, 40, 0.06);
+            color: var(--muted);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <header>
+            <h1>Campus Connect — Timetable</h1>
+            <div class="tabs" id="right-controls">
+                <div class="section-wrap">
+                    <div id="student-section-select" class="section-select">Select Section</div>
+                    <div style="display:flex;gap:8px;margin-left:8px">
+                        <button id="btn-change-section" class="btn ghost">Change section</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="card">
+                <div class="topline" style="margin-bottom:10px">
+                    <div>
+                        <strong>Daily Viewer</strong>
+                        <div class="small">Select your section once — it will be stored until you change it.</div>
+                    </div>
+                    <div id="studentStatus" class="small" style="color:var(--accent-700)">Connecting to Firebase…</div>
+                </div>
+
+                <div class="day-view" style="display:flex; gap:12px; align-items:flex-start;">
+                    <!-- Calendar (left) -->
+                    <div class="calendar card" id="calendar-card" style="flex: 0 0 320px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                            <button class="btn ghost" id="prev-month">‹</button>
+                            <div id="month-label"></div>
+                            <button class="btn ghost" id="next-month">›</button>
+                        </div>
+                        <div class="month small" id="calendar-grid"></div>
+                    </div>
+
+                    <!-- Slots (right) — UPDATED: grid of compact tiles -->
+                    <div class="day-list card" style="flex:1;">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <div>
+                                <h3 id="selected-date"></h3>
+                                <div class="small" id="selected-dayname"></div>
+                                <div id="selected-section" class="small" style="margin-top:6px;color:var(--accent-700)">
+                                </div>
+                            </div>
+                            <div class="small">Theme: <select id="theme-select">
+                                    <option>Default</option>
+                                    <option>Vibrant</option>
+                                    <option>Pastel</option>
+                                </select></div>
+                        </div>
+
+                        <!-- UPDATED container id kept same for JS compatibility -->
+                        <div id="slots-container" aria-live="polite"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card small" style="margin-top:8px">
+                <div><strong>Firebase</strong></div>
+                <div class="small">Viewing schedules stored under <code>/sections/{section}/</code>. Admins manage data
+                    on the admin page.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+    <script>
+        // firebase config (unchanged)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAFKmM22FUSQPYy-eMsBzcZN3bmAxglXl0",
+            authDomain: "smart-timetable-266fe.firebaseapp.com",
+            databaseURL: "https://smart-timetable-266fe-default-rtdb.firebaseio.com",
+            projectId: "smart-timetable-266fe",
+            storageBucket: "smart-timetable-266fe.firebasestorage.app",
+            messagingSenderId: "843230713835",
+            appId: "1:843230713835:web:b97d024f4fcf9a40ceabae",
+            measurementId: "G-DDY9NVEK8R"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const rdb = firebase.database();
+
+        // same palette & helpers
+        const MODERN_PALETTE = ['#7DD3FC', '#A78BFA', '#FBCFE8', '#FDE68A', '#FBC47D', '#86EFAC', '#C7B2FF', '#FFDDD2', '#BFE3FF', '#D6F5E9'];
+        function stringHash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i) | 0; return h; }
+        let subjectColors = {};
+        function assignColorIfMissing(subject) { if (!subject) return '#888'; if (subjectColors[subject]) return subjectColors[subject]; const used = new Set(Object.values(subjectColors || {})); let pick = MODERN_PALETTE.find(c => !used.has(c)); if (!pick) pick = MODERN_PALETTE[Math.abs(stringHash(subject)) % MODERN_PALETTE.length]; subjectColors[subject] = pick; return pick; }
+        function getColorForSubject(subject) { if (!subject) return '#f97316'; if (subjectColors[subject]) return subjectColors[subject]; return assignColorIfMissing(subject); }
+        function hexToRgb(hex) { hex = (hex || '#ffffff').replace('#', ''); if (hex.length === 3) hex = hex.split('').map(c => c + c).join(''); const n = parseInt(hex, 16); return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 }; }
+        function luminance(hex) { const { r, g, b } = hexToRgb(hex); const sr = [r, g, b].map(v => v / 255).map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)); return 0.2126 * sr[0] + 0.7152 * sr[1] + 0.0722 * sr[2]; }
+        function readableTextColor(hex) { try { return luminance(hex) > 0.6 ? '#021018' : '#ffffff'; } catch (e) { return '#ffffff'; } }
+
+        // app state
+        const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        let timetable = {}; DAYS.forEach(d => timetable[d] = []);
+        let sections = [];
+        let selectedSection = localStorage.getItem('studentSection') || null;
+
+        // dom refs
+        const studentStatus = document.getElementById('studentStatus');
+        const sectionSelectEl = document.getElementById('student-section-select');
+        const changeBtn = document.getElementById('btn-change-section');
+
+        // ---------- sign in safely ----------
+        async function ensureSignedIn() {
+            if (window.appUser) return window.appUser;
+            try {
+                const cred = await auth.signInAnonymously();
+                window.appUser = cred.user;
+                studentStatus.textContent = '✔ Connected to Firebase';
+                return window.appUser;
+            } catch (e) {
+                console.warn('anon sign-in failed', e);
+                studentStatus.textContent = '⚠ Anonymous Auth failed — viewing may be limited';
+                return null;
+            }
+        }
+
+        async function tryInitStudent() {
+            try { await ensureSignedIn(); } catch (e) { console.warn(e); }
+            await loadSections();
+            if (selectedSection) { sectionSelectEl.textContent = 'Section: ' + selectedSection; await loadSectionData(selectedSection); }
+            else { await askAndStoreSection(); }
+        }
+
+        async function loadSections() {
+            try {
+                const snap = await rdb.ref('sections/').once('value');
+                const data = snap.val() || {};
+                sections = Object.keys(data);
+                if (!selectedSection) {
+                    sectionSelectEl.textContent = sections.length ? 'Select Section' : 'No sections';
+                } else {
+                    sectionSelectEl.textContent = 'Section: ' + selectedSection;
+                }
+            } catch (e) {
+                console.error('loadSections failed', e);
+                sections = [];
+                sectionSelectEl.textContent = 'No sections';
+            }
+        }
+
+        // ask student to choose a section (only once) and store it
+        async function askAndStoreSection() {
+            if (!sections || sections.length === 0) {
+                await loadSections();
+            }
+            if (!sections || sections.length === 0) {
+                alert('No sections available. Ask admin to create sections first.');
+                return;
+            }
+            // show a simple selection menu
+            const menu = document.createElement('div');
+            menu.style.position = 'fixed'; menu.style.left = '0'; menu.style.top = '0'; menu.style.width = '100%'; menu.style.height = '100%';
+            menu.style.display = 'flex'; menu.style.alignItems = 'center'; menu.style.justifyContent = 'center'; menu.style.background = 'rgba(0,0,0,0.35)';
+            const box = document.createElement('div'); box.style.background = '#fff'; box.style.padding = '18px'; box.style.borderRadius = '12px'; box.style.minWidth = '320px';
+            box.innerHTML = `<h3 style="margin:0 0 8px 0">Pick your section</h3><div class="small" style="margin-bottom:10px">This will be saved until you change it.</div>`;
+            const list = document.createElement('div');
+            sections.forEach(s => {
+                const b = document.createElement('button'); b.className = 'btn ghost'; b.style.display = 'block'; b.style.width = '100%'; b.style.margin = '6px 0'; b.textContent = s;
+                b.onclick = async () => { selectedSection = s; localStorage.setItem('studentSection', s); document.body.removeChild(menu); sectionSelectEl.textContent = 'Section: ' + s; await loadSectionData(s); };
+                list.appendChild(b);
+            });
+            const change = document.createElement('button'); change.className = 'btn ghost'; change.style.marginTop = '8px'; change.textContent = 'Cancel'; change.onclick = () => { document.body.removeChild(menu); };
+            box.appendChild(list); box.appendChild(change); menu.appendChild(box); document.body.appendChild(menu);
+        }
+
+        changeBtn.addEventListener('click', async () => {
+            // clear stored and re-ask
+            localStorage.removeItem('studentSection');
+            selectedSection = null;
+            await loadSections();
+            await askAndStoreSection();
+        });
+
+        async function loadSectionData(name) {
+            if (!name) return;
+            try { await ensureSignedIn(); } catch (e) { console.warn('auth failed', e); }
+            try {
+                const snap = await rdb.ref('sections/' + encodeURIComponent(name)).once('value');
+                const data = snap.val();
+                if (data) {
+                    timetable = data.timetable || {};
+                    subjectColors = data.subjectColors || {};
+                    DAYS.forEach(d => timetable[d] = timetable[d] || []);
+                } else {
+                    timetable = {}; DAYS.forEach(d => timetable[d] = []);
+                    subjectColors = {};
+                }
+                renderMonth(); renderDay(currentDate);
+                document.getElementById('selected-section').textContent = 'Section: ' + name;
+            } catch (e) {
+                console.error('loadSectionData failed', e);
+                alert('Failed to load schedule for section: ' + name);
+            }
+        }
+
+        // calendar + rendering (same as admin)
+        let currentDate = new Date();
+        let viewingMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+
+        function renderMonth() {
+            const year = viewingMonth.getFullYear(); const month = viewingMonth.getMonth();
+            const grid = document.getElementById('calendar-grid'); grid.innerHTML = '';
+            const monthLabel = document.getElementById('month-label'); monthLabel.textContent = viewingMonth.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            weekdays.forEach(h => { const c = document.createElement('div'); c.className = 'cell small'; c.style.fontWeight = '600'; c.textContent = h; grid.appendChild(c); });
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            for (let i = 0; i < firstDayIndex; i++) { const blank = document.createElement('div'); blank.className = 'cell'; grid.appendChild(blank); }
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateObj = new Date(year, month, d); const c = document.createElement('div'); c.className = 'cell'; c.textContent = d;
+                if (isSameDay(dateObj, new Date())) c.classList.add('today');
+                if (isSameDay(dateObj, currentDate)) c.classList.add('selected');
+                c.onclick = () => { currentDate = new Date(dateObj); renderMonth(); renderDay(currentDate); };
+                grid.appendChild(c);
+            }
+        }
+        function isSameDay(a, b) { return a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+        document.getElementById('prev-month').addEventListener('click', () => { viewingMonth = new Date(viewingMonth.getFullYear(), viewingMonth.getMonth() - 1, 1); renderMonth(); });
+        document.getElementById('next-month').addEventListener('click', () => { viewingMonth = new Date(viewingMonth.getFullYear(), viewingMonth.getMonth() + 1, 1); renderMonth(); });
+        document.getElementById('btn-today')?.addEventListener('click', () => { currentDate = new Date(); viewingMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1); renderMonth(); renderDay(currentDate); });
+
+        function renderDay(date) {
+            const sel = document.getElementById('selected-date');
+            const dayname = document.getElementById('selected-dayname');
+            sel.textContent = date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+            dayname.textContent = date.toLocaleDateString();
+            const dayOfWeek = date.toLocaleDateString(undefined, { weekday: 'long' });
+            const container = document.getElementById('slots-container'); container.innerHTML = '';
+            const slots = timetable[dayOfWeek] || [];
+            if (!slots.length) { container.innerHTML = '<div class="small">No slots for this day.</div>'; return; }
+            // sort by start time
+            slots.sort((a, b) => a.start.localeCompare(b.start)).forEach(s => {
+                const color = getColorForSubject(s.subject);
+                const tile = document.createElement('div');
+                tile.className = 'slot-tile';
+                tile.style.background = color;
+                tile.style.color = readableTextColor(color);
+                tile.innerHTML = `<div class="subject">${escapeHtml(s.subject)}</div><div class="time">${escapeHtml(s.start)} — ${escapeHtml(s.end)}</div>`;
+                container.appendChild(tile);
+            });
+        }
+
+        // helper to escape HTML (same as in other files)
+        function escapeHtml(s) {
+            if (s === undefined || s === null) return "";
+            return String(s)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // start
+        renderMonth(); renderDay(currentDate);
+        tryInitStudent();
+    </script>
+</body>
+
+</html>

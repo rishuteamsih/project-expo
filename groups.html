@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>👥 Groups – Campus Connect</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #ece5dd;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #128c7e;
+      color: #fff;
+      text-align: center;
+      padding: 14px;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .app {
+      flex: 1;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 300px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #ddd;
+    }
+
+    .sidebar header {
+      background: #075e54;
+      color: #fff;
+      padding: 10px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .groups {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .group {
+      background: #f9f9f9;
+      border-radius: 8px;
+      padding: 8px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .group:hover {
+      background: #eaeaea;
+    }
+
+    .chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+    }
+
+    .chat header {
+      background: #128c7e;
+      color: #fff;
+      padding: 12px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #fff;
+    }
+
+    .msg-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      position: relative;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #000;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .msg {
+      background: #f1f1f1;
+      padding: 8px 12px;
+      border-radius: 10px;
+      max-width: 70%;
+      word-break: break-word;
+    }
+
+    .me .msg {
+      background: #dcf8c6;
+      margin-left: auto;
+    }
+
+    .msg-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #075e54;
+      margin-bottom: 3px;
+    }
+
+    .msg-time {
+      font-size: 11px;
+      color: #555;
+      opacity: 0.7;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 0;
+      right: -25px;
+      font-size: 14px;
+      color: #888;
+      cursor: pointer;
+      display: none;
+    }
+
+    .msg-row:hover .delete-btn {
+      display: block;
+    }
+
+    .composer {
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      background: #f0f0f0;
+    }
+
+    .composer input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 20px;
+      outline: none;
+    }
+
+    .composer button {
+      background: #128c7e;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .composer button:hover {
+      background: #0d7568;
+    }
+
+    /* Member Modal */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+
+    .modal-box {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .modal-box h3 {
+      margin-top: 0;
+      color: #128c7e;
+    }
+
+    .modal-box ul {
+      list-style: none;
+      padding: 0;
+      max-height: 300px;
+      overflow: auto;
+    }
+
+    .modal-box li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .modal-box button {
+      background: #128c7e;
+      color: #fff;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .modal-box button:hover {
+      background: #0d7568;
+    }
+  </style>
+</head>
+
+<body>
+  <header>👥 Group Chat</header>
+  <div class="app">
+    <div class="sidebar">
+      <header>Groups</header>
+      <button id="createGroup"
+        style="margin:8px;padding:6px 10px;border:none;border-radius:6px;background:#128c7e;color:#fff;">+ Create
+        Group</button>
+      <div class="groups" id="groups"></div>
+    </div>
+
+    <div class="chat">
+      <header>
+        <span id="groupName">Select a group</span>
+        <button id="manageMembers"
+          style="background:#fff;color:#128c7e;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;display:none;">👥
+          Manage</button>
+      </header>
+      <div class="messages" id="messages"></div>
+      <div class="composer">
+        <input id="messageInput" placeholder="Type a message...">
+        <button id="sendBtn">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manage Members Modal -->
+  <div class="modal" id="memberModal">
+    <div class="modal-box">
+      <h3>Manage Members</h3>
+      <ul id="memberList"></ul>
+      <button id="closeMemberModal" style="margin-top:10px;width:100%;">Close</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import {
+      auth, db, GoogleAuthProvider, signInWithPopup,
+      collection, addDoc, doc, getDoc, updateDoc, onSnapshot, query,
+      orderBy, serverTimestamp, arrayUnion, arrayRemove, deleteDoc, getDocs
+    } from "./server.js";
+
+    const groupsEl = document.getElementById("groups");
+    const messagesEl = document.getElementById("messages");
+    const createGroup = document.getElementById("createGroup");
+    const sendBtn = document.getElementById("sendBtn");
+    const input = document.getElementById("messageInput");
+    const groupNameEl = document.getElementById("groupName");
+    const manageBtn = document.getElementById("manageMembers");
+    const memberModal = document.getElementById("memberModal");
+    const memberList = document.getElementById("memberList");
+    const closeMemberModal = document.getElementById("closeMemberModal");
+
+    let user = null, activeGroup = null, unsubMsgs = null;
+
+    // === Avatar ===
+    function getAvatarColor(name) {
+      const colors = ["#ffadad", "#ffd6a5", "#fdffb6", "#caffbf", "#9bf6ff", "#a0c4ff", "#bdb2ff", "#ffc6ff"];
+      let hash = 0; for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      return colors[Math.abs(hash) % colors.length];
+    }
+    function createAvatar(name) {
+      const initials = name ? name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "?";
+      const bg = getAvatarColor(name || "U");
+      return `<div class="avatar" style="background:${bg};">${initials}</div>`;
+    }
+
+    // === Auth ===
+    auth.onAuthStateChanged(u => {
+      user = u ? { uid: u.uid, name: u.displayName || "User", email: u.email || "" } : null;
+      if (!user) signIn();
+      else renderGroups();
+    });
+    async function signIn() { await signInWithPopup(auth, new GoogleAuthProvider()); }
+
+    // === Create Group ===
+    createGroup.onclick = async () => {
+      if (!user) return alert("Sign in first");
+      const name = prompt("Enter group name:");
+      if (!name) return;
+      await addDoc(collection(db, "groups"), {
+        name, creator: user.uid, members: [user.uid], created: serverTimestamp()
+      });
+    };
+
+    // === Render Groups ===
+    function renderGroups() {
+      const qGroups = query(collection(db, "groups"), orderBy("created", "desc"));
+      onSnapshot(qGroups, snap => {
+        groupsEl.innerHTML = "";
+        snap.forEach(docSnap => {
+          const g = { id: docSnap.id, ...docSnap.data() };
+          const div = document.createElement("div");
+          div.className = "group";
+          div.innerHTML = `<div>${g.name}</div><div style="font-size:12px;color:#777;">${(g.members || []).length} members</div>`;
+          div.onclick = () => openGroup(g);
+          groupsEl.appendChild(div);
+        });
+      });
+    }
+
+    // === Open Group ===
+    async function openGroup(g) {
+      if (unsubMsgs) unsubMsgs();
+      activeGroup = g;
+      groupNameEl.textContent = g.name;
+      manageBtn.style.display = g.creator === user.uid ? "block" : "none";
+
+      unsubMsgs = onSnapshot(query(collection(db, "groups", g.id, "messages"), orderBy("timestamp", "asc")), snap => {
+        messagesEl.innerHTML = "";
+        snap.forEach(m => {
+          const d = m.data(); const isSelf = d.senderUid === user?.uid;
+          const msgRow = document.createElement("div");
+          msgRow.className = "msg-row" + (isSelf ? " me" : "");
+          const timeStr = d.timestamp?.toDate?.()?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || "";
+          msgRow.innerHTML = `
+            ${!isSelf ? createAvatar(d.senderName) : ""}
+            <div class="msg">
+              ${!isSelf ? `<div class='msg-name'>${d.senderName}</div>` : ""}
+              <div>${d.text || ""}</div>
+              <div class="msg-time">${timeStr}</div>
+            </div>
+            ${isSelf ? createAvatar(d.senderName) : ""}
+            ${isSelf ? `<span class="delete-btn" title="Delete">🗑️</span>` : ""}
+          `;
+          const delBtn = msgRow.querySelector(".delete-btn");
+          if (delBtn) delBtn.onclick = () => deleteMessage(g.id, m.id);
+          messagesEl.appendChild(msgRow);
+        });
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      });
+    }
+
+    // === Send Message ===
+    sendBtn.onclick = async () => {
+      const text = input.value.trim();
+      if (!text || !activeGroup || !user) return;
+      await addDoc(collection(db, "groups", activeGroup.id, "messages"), {
+        text, senderUid: user.uid, senderName: user.name, timestamp: serverTimestamp()
+      });
+      input.value = "";
+    };
+
+    // === Delete Own Message ===
+    async function deleteMessage(groupId, msgId) {
+      if (!confirm("Delete this message?")) return;
+      await deleteDoc(doc(db, "groups", groupId, "messages", msgId));
+    }
+
+    // === Manage Members ===
+    manageBtn.onclick = async () => {
+      memberList.innerHTML = "";
+      const gDoc = await getDoc(doc(db, "groups", activeGroup.id));
+      const data = gDoc.data(); const members = data.members || [];
+
+      const usersSnap = await getDocs(collection(db, "users"));
+      usersSnap.forEach(u => {
+        const ud = u.data();
+        if (ud.role !== "student") return;
+        const li = document.createElement("li");
+        const isMember = members.includes(ud.uid);
+        li.innerHTML = `<span>${ud.name}</span>
+          <button>${isMember ? "Remove" : "Add"}</button>`;
+        li.querySelector("button").onclick = async () => {
+          const ref = doc(db, "groups", activeGroup.id);
+          if (isMember) await updateDoc(ref, { members: arrayRemove(ud.uid) });
+          else await updateDoc(ref, { members: arrayUnion(ud.uid) });
+        };
+        memberList.appendChild(li);
+      });
+      memberModal.style.display = "flex";
+    };
+    closeMemberModal.onclick = () => memberModal.style.display = "none";
+  </script>
+</body>
+
+</html>

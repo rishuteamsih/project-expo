@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Practice Mode – Published Tests</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="CAMPUS CONNECT.png" />
+    <style>
+        /* Campus Connect theme (only visual changes) */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #f2f4f8;
+            color: #111;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(180deg, #20b39a 0%, #17a88a 100%);
+            color: #fff;
+            padding: 18px;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+            text-align: center;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        header .logo {
+            height: 56px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        header .title-block {
+            display: inline-block;
+            vertical-align: middle;
+            text-align: left;
+        }
+
+        header h1 {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        header p {
+            font-size: 13px;
+            margin: 0;
+            opacity: .95;
+        }
+
+        .container {
+            width: min(980px, 96%);
+            margin: 0 auto;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+        }
+
+        .muted {
+            color: #666;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+
+        .btn {
+            padding: 9px 12px;
+            border-radius: 8px;
+            border: none;
+            background: #18ab91;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn.secondary {
+            background: #fff;
+            color: #18ab91;
+            border: 1px solid #18ab91;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .filter-bar input,
+        .filter-bar select {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #d0d7d5;
+            flex: 1;
+            background: #fbfffe;
+        }
+
+        .test-card {
+            border: 1px solid #e8f3ef;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: center;
+            background: #fbfffe;
+        }
+
+        .test-meta {
+            color: #666;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+
+        .question {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            background: #f6f9f8;
+            border: 1px solid #e6efe9;
+        }
+
+        .question.correct {
+            outline: 3px solid rgba(46, 204, 113, 0.12);
+        }
+
+        .question.wrong {
+            outline: 3px solid rgba(231, 76, 60, 0.08);
+        }
+
+        .practice-run {
+            margin-top: 14px;
+            background: #fff;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #eee;
+        }
+
+        .score {
+            margin-top: 12px;
+            color: #124e40;
+            font-weight: 800;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        textarea {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #d0d7d5;
+            width: 100%;
+            background: #fbfffe;
+        }
+
+        @media (max-width: 720px) {
+            .test-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            header {
+                padding: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div style="display:flex;align-items:center;justify-content:center;gap:12px;">
+            <img class="logo" src="CAMPUS CONNECT.png" alt="Campus Connect">
+            <div class="title-block">
+                <h1>Campus Connect</h1>
+                <p>Practice Mode — Published Tests</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card" id="authCard">
+            <div id="authStatus" class="muted">Checking sign-in…</div>
+        </div>
+
+        <div class="card" id="setupCard" style="display:none;">
+            <h2 style="color:#18ab91;">Set Up Your Profile</h2>
+            <input id="studentName" placeholder="Enter Your Name" />
+            <input id="studentId" placeholder="Enter Your Roll Number / ID" />
+            <button class="btn" onclick="saveProfile()">Continue</button>
+        </div>
+
+        <div class="card" id="testListCard" style="display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-weight:800;color:#18ab91;">🧠 Practice Tests</div>
+                <div class="muted">Practice to improve — no submission stored</div>
+            </div>
+
+            <div class="filter-bar" style="margin-top:12px;">
+                <input id="searchBox" placeholder="🔍 Search test by title or code..." oninput="applyFilter()" />
+                <select id="filterMode" onchange="applyFilter()">
+                    <option value="all">All</option>
+                    <option value="public">Public Only</option>
+                    <option value="private">Private Only</option>
+                </select>
+            </div>
+
+            <div id="testList"></div>
+        </div>
+
+        <div class="card" id="practiceSection" style="display:none;">
+            <h2 id="testTitle" style="color:#18ab91;"></h2>
+            <p id="testDescription" class="muted"></p>
+            <div id="questionArea"></div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+                <button class="btn" onclick="submitPractice()">Finish Practice</button>
+                <button class="btn secondary" onclick="restart()">🔙 Back to List</button>
+            </div>
+            <div id="scoreArea" class="score"></div>
+        </div>
+    </div>
+
+    <!-- Firebase + original JS (unchanged) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAFKmM22FUSQPYy-eMsBzcZN3bmAxglXl0",
+            authDomain: "smart-timetable-266fe.firebaseapp.com",
+            projectId: "smart-timetable-266fe",
+            storageBucket: "smart-timetable-266fe.appspot.com",
+            messagingSenderId: "843230713835",
+            appId: "1:843230713835:web:b97d024f4fcf9a40ceabae",
+            measurementId: "G-DDY9NVEK8R"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        let currentUser = null;
+        let currentProfile = null;
+        let currentTest = null;
+
+        const authStatus = document.getElementById("authStatus");
+
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                authStatus.innerHTML = `✅ Signed in as <strong>${user.email || 'User'}</strong>`;
+                const docRef = db.collection("users").doc(user.uid);
+                const docSnap = await docRef.get();
+
+                if (docSnap.exists) {
+                    currentProfile = docSnap.data();
+                }
+
+                if (!currentProfile || !currentProfile.name || !currentProfile.rollNo) {
+                    document.getElementById("setupCard").style.display = "block";
+                } else {
+                    document.getElementById("setupCard").style.display = "none";
+                    document.getElementById("testListCard").style.display = "block";
+                    loadPracticeTests();
+                }
+            } else {
+                await auth.signInAnonymously();
+            }
+        });
+
+        async function saveProfile() {
+            const name = document.getElementById("studentName").value.trim();
+            const roll = document.getElementById("studentId").value.trim();
+            if (!name || !roll) return alert("Please fill in both fields");
+
+            await db.collection("users").doc(currentUser.uid).set({
+                name, rollNo: roll, role: "student"
+            }, { merge: true });
+
+            currentProfile = { name, rollNo: roll };
+            document.getElementById("setupCard").style.display = "none";
+            document.getElementById("testListCard").style.display = "block";
+            loadPracticeTests();
+        }
+
+        async function loadPracticeTests() {
+            const snap = await db.collection("tests").where("resultsPublished", "==", true).get();
+            renderTests(snap);
+        }
+
+        function applyFilter() { loadPracticeTests(); }
+
+        function renderTests(snap) {
+            const container = document.getElementById("testList");
+            container.innerHTML = "";
+            const modeFilter = (document.getElementById("filterMode")?.value || "all").toLowerCase();
+            const search = (document.getElementById("searchBox")?.value || "").toLowerCase();
+
+            snap.docs.forEach(doc => {
+                const t = doc.data();
+                const id = doc.id;
+                const acc = (t.accessMode || "private").toLowerCase();
+                if (modeFilter !== "all" && acc !== modeFilter) return;
+                const title = (t.title || "").toLowerCase();
+                if (search && !title.includes(search) && !id.toLowerCase().includes(search)) return;
+
+                const totalMarks = (t.questions || []).reduce((sum, q) => sum + (Number(q.marks) || 0), 0);
+                const div = document.createElement("div");
+                div.className = "test-card";
+                div.innerHTML = `
+          <div>
+            <h3 style="margin:0;color:#124e40;">${t.title || "(Untitled Test)"}</h3>
+            <div class="test-meta">Code: ${id} • Qs: ${t.questions?.length || 0} • Marks: ${totalMarks}</div>
+          </div>
+          <div>
+            <button class="btn secondary" onclick="startPractice('${id}')">🧩 Practice Now</button>
+          </div>
+        `;
+                container.appendChild(div);
+            });
+        }
+
+        async function startPractice(id) {
+            const doc = await db.collection("tests").doc(id).get();
+            const t = doc.data();
+            currentTest = { id, ...t };
+
+            document.getElementById("testListCard").style.display = "none";
+            document.getElementById("practiceSection").style.display = "block";
+            document.getElementById("testTitle").textContent = t.title;
+            document.getElementById("testDescription").textContent = t.description || "";
+
+            const qArea = document.getElementById("questionArea");
+            qArea.innerHTML = "";
+
+            (t.questions || []).forEach((q, i) => {
+                const div = document.createElement("div");
+                div.className = "question";
+                div.innerHTML = `<strong>Q${i + 1} (${q.marks} marks):</strong> ${q.text}<br>`;
+                if (q.type === "mcq" && q.options) {
+                    q.options.forEach(opt => {
+                        div.innerHTML += `<label style="display:block;margin-top:6px;"><input type="radio" name="q${i}" value="${opt}"> ${opt}</label>`;
+                    });
+                } else {
+                    div.innerHTML += `<input type="text" name="q${i}" placeholder="Your answer" />`;
+                }
+                qArea.appendChild(div);
+            });
+        }
+
+        function submitPractice() {
+            const qList = currentTest.questions || [];
+            let score = 0;
+            const qArea = document.getElementById("questionArea");
+            const elements = qArea.querySelectorAll(".question");
+
+            qList.forEach((q, i) => {
+                const el = elements[i];
+                let val = "";
+                if (q.type === "mcq") {
+                    const selected = document.querySelector(`input[name="q${i}"]:checked`);
+                    val = selected ? selected.value.trim() : "";
+                } else {
+                    const input = document.querySelector(`input[name="q${i}"]`);
+                    val = input ? input.value.trim() : "";
+                }
+
+                if (val.toLowerCase() === (q.answer || "").toLowerCase()) {
+                    score += q.marks || 1;
+                    el.classList.add("correct");
+                } else {
+                    el.classList.add("wrong");
+                    el.innerHTML += `<br><em>Correct answer:</em> ${q.answer}`;
+                }
+            });
+
+            const total = qList.reduce((s, q) => s + (q.marks || 1), 0);
+            document.getElementById("scoreArea").innerHTML =
+                `<h3 style="margin:6px 0;">✅ Practice Complete!</h3><p style="margin:6px 0;">Your Score: ${score} / ${total}</p>
+         <button class="btn secondary" onclick="restart()">🔙 Back to List</button>`;
+        }
+
+        function restart() {
+            document.getElementById("practiceSection").style.display = "none";
+            document.getElementById("testListCard").style.display = "block";
+        }
+    </script>
+</body>
+
+</html>

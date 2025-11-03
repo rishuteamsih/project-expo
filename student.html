@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Student Panel — Public tests only</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            margin: 0;
+            background: #f6fff7;
+            padding: 18px;
+            color: #111
+        }
+
+        header {
+            background: #128c7e;
+            color: #fff;
+            padding: 14px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 700
+        }
+
+        .card {
+            background: #fff;
+            padding: 14px;
+            border-radius: 8px;
+            margin-top: 16px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06)
+        }
+
+        input,
+        textarea,
+        select {
+            display: block;
+            margin: 8px 0;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            width: 100%
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 0;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 4px
+        }
+
+        .btn.primary {
+            background: #25d366;
+            color: white
+        }
+
+        .btn.secondary {
+            background: #075e54;
+            color: white
+        }
+
+        .test-card {
+            border: 1px solid #e6f7ef;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px
+        }
+
+        .question {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 6px;
+            background: #fafafa;
+            border: 1px solid #e8fff2
+        }
+
+        .small {
+            font-size: 13px;
+            color: #666
+        }
+
+        .hint {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 8px
+        }
+
+        #resultPanel {
+            margin-top: 12px
+        }
+    </style>
+</head>
+
+<body>
+    <header>📚 Student Panel</header>
+
+    <div class="card" id="authCard">
+        <div id="profileBox">Checking sign in...</div>
+        <button class="btn secondary" id="signOutBtn" style="display:none">Sign out</button>
+    </div>
+
+    <div class="card">
+        <input id="testCode" placeholder="Enter test code (private tests require code)" />
+        <button class="btn primary" onclick="loadTests()">Browse Public Tests</button>
+        <button class="btn secondary" onclick="searchByCode()">Search by Code</button>
+        <div id="loadError" class="small" style="color:#b00020"></div>
+    </div>
+
+    <div class="card">
+        <div class="hint">Note: Only public tests are shown here. Private tests can be accessed only with a valid test
+            code using "Search by Code".</div>
+        <h3>Available Tests</h3>
+        <div id="testList"></div>
+    </div>
+
+    <div class="card" id="testSection" style="display:none">
+        <h3 id="testTitle"></h3>
+        <p id="testDescription"></p>
+        <div id="timer" class="small"></div>
+        <div id="questionArea"></div>
+        <div style="margin-top:8px">
+            <button class="btn primary" id="submitBtn" onclick="submitAnswers()">Submit Answers</button>
+            <button class="btn secondary" id="viewResultBtn" style="display:none"
+                onclick="showResultForTest(currentTest?.id)">View Result</button>
+        </div>
+        <div id="submitStatus" class="small"></div>
+    </div>
+
+    <div id="resultPanel" class="card" style="display:none"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import {
+            getFirestore, collection, getDocs, doc, getDoc, query, where, addDoc,
+            serverTimestamp, onSnapshot
+        } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // --- CONFIG: ensure this matches your project ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAFKmM22FUSQPYy-eMsBzcZN3bmAxglXl0",
+            authDomain: "smart-timetable-266fe.firebaseapp.com",
+            projectId: "smart-timetable-266fe",
+            storageBucket: "smart-timetable-266fe.appspot.com",
+            messagingSenderId: "843230713835",
+            appId: "1:843230713835:web:b97d024f4fcf9a40ceabae",
+            measurementId: "G-DDY9NVEK8R"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let currentTest = null;
+        let countdownInterval = null;
+        let testDocUnsub = null; // realtime listener unsubscribe while taking test
+
+        // utility helpers
+        function escapeHtml(s) {
+            if (s == null) return "";
+            return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function formatTimestamp(ts) {
+            try {
+                if (!ts) return "";
+                if (typeof ts.toDate === "function") return ts.toDate().toISOString();
+                if (typeof ts === "string") return ts;
+                return new Date(ts).toISOString();
+            } catch (e) { return ""; }
+        }
+
+        // auth & profile UI
+        onAuthStateChanged(auth, user => {
+            const box = document.getElementById("profileBox");
+            const so = document.getElementById("signOutBtn");
+            if (!user) {
+                box.innerHTML = 'Please sign in to take tests.';
+                so.style.display = "none";
+                return;
+            }
+            currentUser = user;
+            so.style.display = "inline-block";
+            so.onclick = () => signOut(auth);
+
+            const email = user.email || "";
+            const roll = email.split("@")[0] || "";
+            const name = user.displayName || roll.replace(/\./g, " ");
+            box.innerHTML = `<strong>👤 ${escapeHtml(name)}</strong><br>📧 ${escapeHtml(email)}<br><span class="small">Roll: ${escapeHtml(roll)}</span>`;
+        });
+
+        // -------------------------
+        // LOAD PUBLIC TESTS (query Firestore for published & public)
+        // -------------------------
+        window.loadTests = async function () {
+            document.getElementById("loadError").textContent = "";
+            const container = document.getElementById("testList");
+            container.innerHTML = "<em>Loading…</em>";
+
+            try {
+                const q = query(collection(db, "tests"), where("published", "==", true), where("accessMode", "==", "public"));
+                const snap = await getDocs(q);
+                container.innerHTML = "";
+                const now = new Date();
+
+                snap.forEach(docSnap => {
+                    const t = docSnap.data();
+                    const id = docSnap.id;
+
+                    const publishOk = !t.publishAt || new Date(t.publishAt) <= now;
+                    const expireOk = !t.expireAt || new Date(t.expireAt) >= now;
+                    if (!publishOk || !expireOk) return; // respect time window
+
+                    // skip stopped tests
+                    if (t.stopped) return;
+
+                    const totalMarks = (t.questions || []).reduce((s, q) => s + (q.marks || 0), 0);
+                    const div = document.createElement("div");
+                    div.className = "test-card";
+                    div.innerHTML = `<h4>${escapeHtml(t.title)}</h4>
+          <div class="small">Duration: ${t.duration || 0}m • Questions: ${(t.questions || []).length} • Total Marks: ${totalMarks}</div>
+          <div style="margin-top:8px">
+            <button class="btn primary" onclick="startTest('${id}')">Start</button>
+          </div>`;
+                    container.appendChild(div);
+                });
+
+                if (!container.children.length) container.innerHTML = "<p>No public tests available.</p>";
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = "<p>Failed to load tests</p>";
+            }
+        };
+
+        // -------------------------
+        // SEARCH BY CODE (private OR public allowed via code)
+        // -------------------------
+        window.searchByCode = async function () {
+            document.getElementById("loadError").textContent = "";
+            const code = document.getElementById("testCode").value.trim();
+            if (!code) { document.getElementById("loadError").textContent = "Enter a test code."; return; }
+
+            try {
+                const docSnap = await getDoc(doc(db, "tests", code));
+                if (!docSnap.exists()) {
+                    document.getElementById("loadError").textContent = "Test not found.";
+                    return;
+                }
+                const t = docSnap.data();
+                const now = new Date();
+
+                if (!t.published) {
+                    document.getElementById("loadError").textContent = "Test is not published.";
+                    return;
+                }
+                if (t.stopped) {
+                    document.getElementById("loadError").textContent = "Test has been stopped by faculty.";
+                    return;
+                }
+                if (t.publishAt && new Date(t.publishAt) > now) {
+                    document.getElementById("loadError").textContent = "Test isn't available yet.";
+                    return;
+                }
+                if (t.expireAt && new Date(t.expireAt) < now) {
+                    document.getElementById("loadError").textContent = "Test has expired.";
+                    return;
+                }
+                // OK - start (private tests accessible by code)
+                startTest(code);
+            } catch (e) {
+                console.error(e);
+                document.getElementById("loadError").textContent = "Error while searching for test.";
+            }
+        };
+
+        // -------------------------
+        // START TEST (checks double submission + attaches realtime listener)
+        // -------------------------
+        window.startTest = async function (code) {
+            if (!currentUser) return alert("Please sign in first.");
+            const studentId = (currentUser.email || "").split("@")[0] || "";
+
+            // check double submission
+            const respQ = query(collection(db, "responses"), where("testId", "==", code), where("studentId", "==", studentId));
+            const respSnap = await getDocs(respQ);
+            if (!respSnap.empty) return alert("You have already submitted this test.");
+
+            // get test doc
+            const docRef = doc(db, "tests", code);
+            const docSnap = await getDoc(docRef);
+            if (!docSnap.exists()) return alert("Test data missing");
+            const t = docSnap.data();
+
+            // block stopped tests
+            if (t.stopped) return alert("This test has been stopped by faculty and cannot be started.");
+
+            currentTest = { id: code, ...t };
+
+            // render questions
+            document.getElementById("testTitle").textContent = t.title;
+            document.getElementById("testDescription").textContent = t.description || "";
+            const qArea = document.getElementById("questionArea");
+            qArea.innerHTML = "";
+            (t.questions || []).forEach((q, i) => {
+                const div = document.createElement("div");
+                div.className = "question";
+                div.innerHTML = `<strong>Q${i + 1} (${q.marks || 1} marks)</strong><div>${escapeHtml(q.text)}</div>`;
+                if (q.type === "mcq" && q.options) {
+                    q.options.forEach(opt => {
+                        div.innerHTML += `<label style="display:block"><input type="radio" name="q${i}" value="${escapeHtml(opt)}"> ${escapeHtml(opt)}</label>`;
+                    });
+                } else {
+                    div.innerHTML += `<textarea name="q${i}" placeholder="Your answer" style="width:100%;min-height:60px"></textarea>`;
+                }
+                qArea.appendChild(div);
+            });
+
+            document.getElementById("testSection").style.display = "block";
+            document.getElementById("submitStatus").textContent = "";
+            document.getElementById("viewResultBtn").style.display = "none";
+
+            // start timer
+            if (t.duration && t.duration > 0) {
+                startTimer(t.duration * 60);
+            } else {
+                document.getElementById("timer").textContent = "";
+            }
+
+            // set up realtime listener on the test doc to detect 'stopped' or publish status changes
+            if (testDocUnsub) { testDocUnsub(); testDocUnsub = null; }
+            testDocUnsub = onSnapshot(docRef, snapshot => {
+                if (!snapshot.exists()) return;
+                const data = snapshot.data();
+                // if faculty stopped the test -> auto-submit current answers if not already submitted
+                if (data.stopped) {
+                    // auto-submit if test is still visible
+                    if (document.getElementById("testSection").style.display !== "none") {
+                        try {
+                            // disable submit button so user can't interact while auto-submitting
+                            document.getElementById("submitBtn").disabled = true;
+                            submitAnswers(true /* auto */).then(() => {
+                                alert("Test was stopped by faculty. Your answers were auto-submitted.");
+                            }).catch(err => {
+                                console.error("Auto-submit failed on stop", err);
+                                alert("Test stopped — auto-submit failed. Please try to submit manually or contact your faculty.");
+                            }).finally(() => {
+                                // ensure submit button re-enabled state (safe fallback)
+                                document.getElementById("submitBtn").disabled = false;
+                            });
+                        } catch (e) { console.error(e); }
+                    }
+                }
+                // if resultsPublished became true for this test, show view result button or automatically fetch if student already submitted
+                if (data.resultsPublished) {
+                    // if student already submitted, show result button
+                    document.getElementById("viewResultBtn").style.display = "inline-block";
+                }
+                // If published set to false mid-test, treat it as stopped – auto-submit handled above because teachers should set stopped=true too
+                if (data.published === false && data.stopped) {
+                    // handled as stopped
+                }
+            });
+
+            window.scrollTo({ top: document.getElementById("testSection").offsetTop, behavior: "smooth" });
+        };
+
+        // -------------------------
+        // TIMER
+        // -------------------------
+        function startTimer(seconds) {
+            clearInterval(countdownInterval);
+            let remaining = seconds;
+            updateTimerUI(remaining);
+            countdownInterval = setInterval(() => {
+                remaining--;
+                updateTimerUI(remaining);
+                if (remaining <= 0) {
+                    clearInterval(countdownInterval);
+                    // auto-submit when time expires
+                    submitAnswers(true /* auto */).then(() => {
+                        alert("Time is up — your answers were auto-submitted.");
+                    }).catch(err => {
+                        console.error("Auto-submit failed on timeout", err);
+                        alert("Time expired — auto-submit failed. Try submitting manually or contact your faculty.");
+                    });
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI(sec) {
+            if (sec < 0) sec = 0;
+            const mm = Math.floor(sec / 60); const ss = sec % 60;
+            document.getElementById("timer").textContent = `Time left: ${mm}m ${ss}s`;
+        }
+
+        // -------------------------
+        // SUBMIT ANSWERS
+        // -------------------------
+        // `isAuto` indicates auto-submit (on stop/timeout) — we still record answers as best-effort
+        window.submitAnswers = async function (isAuto = false) {
+            if (!currentTest) return alert("No test in progress");
+            if (!currentUser) return alert("Sign in required");
+            const studentId = (currentUser.email || "").split("@")[0] || "";
+            const studentName = currentUser.displayName || studentId.replace(/\./g, " ");
+            // collect answers
+            const answers = {};
+            (currentTest.questions || []).forEach((q, i) => {
+                if (q.type === "mcq") {
+                    const selected = document.querySelector(`input[name="q${i}"]:checked`);
+                    answers[`q${i}`] = selected ? selected.value : "";
+                } else {
+                    answers[`q${i}`] = (document.querySelector(`textarea[name="q${i}"]`)?.value || "").trim();
+                }
+            });
+
+            // compute autoScore client-side
+            let autoScore = 0;
+            let totalPossible = 0;
+            (currentTest.questions || []).forEach((q, i) => {
+                totalPossible += (q.marks || 0);
+                if (q.type === "mcq") {
+                    const given = (answers[`q${i}`] || "").trim();
+                    if (given && q.answer && given === q.answer) autoScore += (q.marks || 0);
+                }
+            });
+
+            try {
+                // final safety: check double submit again before writing
+                const respQ = query(collection(db, "responses"), where("testId", "==", currentTest.id), where("studentId", "==", studentId));
+                const respSnap = await getDocs(respQ);
+                if (!respSnap.empty) {
+                    // already submitted — show result button if published
+                    document.getElementById("submitStatus").textContent = "You have already submitted this test.";
+                    // clean up listener/timer
+                    if (countdownInterval) clearInterval(countdownInterval);
+                    if (testDocUnsub) { testDocUnsub(); testDocUnsub = null; }
+                    // optionally show result button if results published
+                    if (currentTest.resultsPublished) document.getElementById("viewResultBtn").style.display = "inline-block";
+                    return;
+                }
+
+                // create response doc
+                await addDoc(collection(db, "responses"), {
+                    testId: currentTest.id,
+                    studentId, studentName,
+                    submittedAt: serverTimestamp(),
+                    answers,
+                    autoScore,
+                    manualScore: null,
+                    graded: false,
+                    totalPossible
+                });
+
+                // success UI
+                document.getElementById("submitStatus").textContent = isAuto ? "Auto-submitted." : "✅ Submitted successfully!";
+                // cleanup
+                if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+                if (testDocUnsub) { testDocUnsub(); testDocUnsub = null; }
+                document.getElementById("testSection").style.display = "none";
+
+                // If results already published, let student view results
+                if (currentTest.resultsPublished) {
+                    document.getElementById("viewResultBtn").style.display = "inline-block";
+                }
+                // Optionally refresh available tests
+                loadTests();
+            } catch (e) {
+                console.error(e);
+                if (isAuto) {
+                    // Auto-submit failed — still hide UI and show message to contact faculty
+                    document.getElementById("submitStatus").textContent = "Auto-submit failed; contact your faculty.";
+                } else {
+                    alert("Submission failed. Try again.");
+                }
+            }
+        };
+
+        // -------------------------
+        // SHOW RESULT for a given test
+        // -------------------------
+        window.showResultForTest = async function (testId) {
+            if (!currentUser) return alert("Sign in first");
+            const studentId = (currentUser.email || "").split("@")[0] || "";
+
+            try {
+                // 1) check test exists and resultsPublished
+                const tSnap = await getDoc(doc(db, "tests", testId));
+                if (!tSnap.exists()) return alert("Test not found");
+                const t = tSnap.data();
+                if (!t.resultsPublished) return alert("Results are not published yet.");
+
+                // 2) find student's response
+                const respQ = query(collection(db, "responses"), where("testId", "==", testId), where("studentId", "==", studentId));
+                const respSnap = await getDocs(respQ);
+                if (respSnap.empty) return alert("You did not submit this test.");
+
+                const rDoc = respSnap.docs[0];
+                const r = rDoc.data();
+
+                const final = (r.finalScore != null) ? r.finalScore : (Number(r.autoScore || 0) + Number(r.manualScore || 0));
+
+                // show in resultPanel
+                const panel = document.getElementById("resultPanel");
+                panel.style.display = "block";
+                panel.innerHTML = `
+        <h3>Results — ${escapeHtml(t.title || testId)}</h3>
+        <p><strong>Score:</strong> ${final} / ${r.totalPossible ?? "N/A"}</p>
+        <p><strong>Auto score:</strong> ${r.autoScore ?? 0} · <strong>Manual score:</strong> ${r.manualScore ?? 0}</p>
+        <p><strong>Released at:</strong> ${r.releasedAt ? (r.releasedAt.toDate ? r.releasedAt.toDate().toLocaleString() : r.releasedAt) : (t.resultsReleasedAt ? (t.resultsReleasedAt.toDate ? t.resultsReleasedAt.toDate().toLocaleString() : t.resultsReleasedAt) : "")}</p>
+        <details><summary>View answers</summary>
+          <pre>${escapeHtml(JSON.stringify(r.answers || {}, null, 2))}</pre>
+        </details>
+      `;
+                // scroll to result
+                panel.scrollIntoView({ behavior: "smooth" });
+            } catch (e) {
+                console.error(e);
+                alert("Failed to load result.");
+            }
+        };
+
+        // -------------------------
+        // Initial UI: no auto-load of tests; wait for Browse click (safer)
+        // -------------------------
+        // (optionally call loadTests() on page load)
+    </script>
+</body>
+
+</html>

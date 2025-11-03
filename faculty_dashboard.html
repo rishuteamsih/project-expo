@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Campus Connect – Faculty Dashboard</title>
+  <link rel="icon" href="CAMPUS CONNECT.png" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif
+    }
+
+    body {
+      min-height: 100vh;
+      background: #f2f4f8;
+      padding: 20px
+    }
+
+    /* header now matches classroom style (gradient + logo + title block) */
+    header {
+      background: linear-gradient(180deg, #20b39a 0%, #17a88a 100%);
+      color: #fff;
+      text-align: center;
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    header img {
+      height: 56px;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 12px;
+    }
+
+    header .title-block {
+      display: inline-block;
+      vertical-align: middle;
+      text-align: left;
+    }
+
+    header h1 {
+      font-size: 20px;
+      margin: 0;
+      font-weight: 700;
+    }
+
+    header p {
+      font-size: 13px;
+      margin: 0;
+      opacity: .95;
+    }
+
+    .profile-btn {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #fff;
+      color: #18ab91;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .profile-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .dash-tabs {
+      width: 100%;
+      max-width: 900px;
+      margin: 14px auto 8px
+    }
+
+    .tabs-bar {
+      background: #198b6f;
+      color: #fff;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 14px 18px;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, .08);
+      font-weight: 700
+    }
+
+    .tab {
+      position: relative;
+      cursor: pointer;
+      white-space: nowrap;
+      user-select: none;
+      color: inherit;
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    .tab a {
+      text-decoration: none;
+      color: inherit
+    }
+
+    .tab:hover {
+      opacity: .95;
+      text-decoration: underline;
+      text-underline-offset: 4px
+    }
+
+    .dropdown {
+      position: relative
+    }
+
+    .dropdown-toggle::after {
+      content: "▾";
+      margin-left: 8px;
+      font-weight: 900;
+      font-size: 12px
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 115%;
+      left: 0;
+      background: #fff;
+      color: #124e40;
+      min-width: 190px;
+      border-radius: 10px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, .15);
+      padding: 8px 0;
+      display: none;
+      z-index: 50
+    }
+
+    .dropdown.open .dropdown-menu {
+      display: block
+    }
+
+    .dropdown-item {
+      padding: 10px 14px;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block
+    }
+
+    .dropdown-item:hover {
+      background: #eef7f5
+    }
+
+    .chat-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 2px solid #18ab91;
+      color: #18ab91;
+      background: #fff;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: .2s
+    }
+
+    .chat-btn:hover {
+      background: #18ab91;
+      color: #fff
+    }
+
+    .logout-btn {
+      margin-top: 30px;
+      padding: 12px 25px;
+      border-radius: 10px;
+      border: none;
+      background: #18ab91;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-top: 6px
+    }
+
+    .card {
+      background: #fff;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #eee;
+      margin-bottom: 14px
+    }
+
+    .class-card {
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 8px;
+      background: #fff;
+      margin-bottom: 8px
+    }
+
+    .scroll-pane {
+      max-height: 280px;
+      overflow: auto;
+      padding-right: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-radius: 10px
+    }
+
+    .notice-card {
+      background: #fff;
+      padding: 12px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, .05)
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, .5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999
+    }
+
+    .modal-box {
+      background: #fff;
+      padding: 25px;
+      border-radius: 14px;
+      width: 90%;
+      max-width: 420px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, .15);
+      max-height: 80vh;
+      overflow-y: auto
+    }
+
+    .modal-box h2 {
+      color: #18ab91;
+      margin-bottom: 10px;
+      text-align: center
+    }
+
+    .close-btn {
+      margin-top: 10px;
+      display: block;
+      width: 100%;
+      background: #ccc;
+      color: #000;
+      padding: 8px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer
+    }
+
+    .small-btn {
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid #18ab91;
+      background: #fff;
+      color: #18ab91;
+      font-weight: 600;
+      cursor: pointer
+    }
+
+    .small-btn:hover {
+      background: #18ab91;
+      color: #fff
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse
+    }
+
+    th,
+    td {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+      text-align: left
+    }
+
+    /* simple toast style */
+    #toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 8px;
+      display: none;
+      z-index: 99999;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-direction:column;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <img src="CAMPUS CONNECT.png" alt="Campus Connect Logo">
+        <div class="title-block">
+          <h1>Campus Connect</h1>
+          <p>Faculty Dashboard</p>
+        </div>
+      </div>
+    </div>
+
+    <button id="profileBtn" class="profile-btn" title="Profile">👤</button>
+  </header>
+
+  <!-- Tabs -->
+  <nav class="dash-tabs" aria-label="Faculty navigation">
+    <div class="tabs-bar">
+      <div class="tab dropdown" data-dropdown>
+        <span class="dropdown-toggle">Chat Option</span>
+        <div class="dropdown-menu" role="menu">
+          <a class="dropdown-item" href="chat.html" target="_blank" rel="noopener">Global Chat</a>
+          <a class="dropdown-item" href="private.html" target="_blank" rel="noopener">Private Chat</a>
+          <a class="dropdown-item" href="groups.html" target="_blank" rel="noopener">Group Chat</a>
+        </div>
+      </div>
+      <div class="tab" data-tab="classroom">Classroom</div>
+      <div class="tab" data-tab="notices">Notices</div>
+      <div class="tab" id="postNoticeTab">Post Notice</div>
+      <div class="tab"><a href="teacher.html" target="_blank" rel="noopener">Test</a></div>
+      <div class="tab" data-student-tab="attendance">Attendance</div>
+    </div>
+  </nav>
+
+  <main style="max-width:900px;margin:0 auto;">
+    <!-- Classroom Section -->
+    <section id="sec-classroom" style="display:block; margin-top:12px;">
+      <div class="card">
+        <h3 style="color:#18ab91; margin-bottom:6px;">➕ Create Classroom</h3>
+        <form id="classForm" style="display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap;">
+          <div style="flex:1; min-width:260px;">
+            <label for="classNameInput">Class Name</label>
+            <input id="classNameInput" type="text" placeholder="Class Name (e.g. Physics 101)" required>
+          </div>
+          <div style="flex:1; min-width:220px;">
+            <label for="classCodeInput">Custom Class Code (optional)</label>
+            <input id="classCodeInput" type="text" placeholder="e.g. CC-ABCD12">
+          </div>
+          <button id="createClassBtn" type="submit" class="chat-btn"
+            style="border-width:0; padding:10px 18px;">Create</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3 style="color:#18ab91; margin-bottom:6px;">🏫 My Classes</h3>
+        <div id="classList" class="scroll-pane"></div>
+      </div>
+    </section>
+
+    <section id="sec-notices" style="display:none; margin-top:12px;">
+      <div class="card">
+        <h3 style="color:#18ab91; margin-bottom:6px;">📜 Notices</h3>
+        <div id="noticeList" class="scroll-pane" style="margin-top:8px;"></div>
+      </div>
+    </section>
+
+    <button id="logoutBtn" class="logout-btn">Logout</button>
+  </main>
+
+  <!-- Post Notice Modal -->
+  <div id="postNoticeModal" class="modal" aria-hidden="true">
+    <div class="modal-box">
+      <h2>📰 Post Notice</h2>
+      <form id="noticeForm">
+        <input id="noticeTitleInput" type="text" placeholder="Notice Title" required>
+        <textarea id="noticeMessageInput" rows="3" placeholder="Write your notice..." required></textarea>
+        <input type="file" id="noticeFileInput" accept="image/*,.pdf">
+        <button id="postNoticeBtn" type="submit" class="chat-btn"
+          style="width:100%; margin-top:10px; border-width:0;">Post Notice</button>
+      </form>
+      <button id="closePostNotice" class="close-btn" type="button">Close</button>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div id="profileModal" class="modal" aria-hidden="true">
+    <div class="modal-box">
+      <h2>Your Profile</h2>
+      <label for="profName">Name</label><input type="text" id="profName" />
+      <label for="profEmail">Email</label><input type="email" id="profEmail" disabled />
+      <label for="profRole">Role</label><input type="text" id="profRole" disabled value="Faculty" />
+      <label for="profBio">Bio</label><textarea id="profBio" rows="3"></textarea>
+      <button id="saveProfile" class="chat-btn" style="width:100%; margin-top:10px; border-width:0;">Save</button>
+      <button id="closeProfile" class="close-btn" type="button">Close</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script type="module">
+    import {
+      auth, db, storage, signOut, requireAuth,
+      collection, addDoc, query, where, onSnapshot, serverTimestamp,
+      sRef, uploadBytesResumable, getDownloadURL,
+      getUserProfile, saveUserProfile, orderBy
+    } from "./server.js";
+
+    function setupDropdowns() {
+      const dropdowns = document.querySelectorAll('[data-dropdown]');
+      dropdowns.forEach(dd => {
+        const toggle = dd.querySelector('.dropdown-toggle');
+        if (!toggle) return;
+        toggle.addEventListener('click', (e) => { e.stopPropagation(); dd.classList.toggle('open'); });
+      });
+      document.addEventListener('click', () => {
+        document.querySelectorAll('.dropdown.open').forEach(d => d.classList.remove('open'));
+      });
+    }
+    setupDropdowns();
+
+    // Tabs
+    (function setupTabs() {
+      const sections = {
+        classroom: document.getElementById('sec-classroom'),
+        notices: document.getElementById('sec-notices')
+      };
+      document.querySelectorAll('[data-tab]').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const key = tab.getAttribute('data-tab');
+          Object.values(sections).forEach(s => s.style.display = 'none');
+          if (sections[key]) sections[key].style.display = 'block';
+        });
+      });
+      document.getElementById('postNoticeTab')?.addEventListener('click', () => {
+        document.getElementById('postNoticeModal').style.display = 'flex';
+      });
+    })();
+
+    // Simple toast helper
+    function showToast(msg, ms = 2500) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.display = 'block';
+      t.style.opacity = '1';
+      clearTimeout(t._hideTimer);
+      t._hideTimer = setTimeout(() => {
+        t.style.opacity = '0';
+        setTimeout(() => t.style.display = 'none', 200);
+      }, ms);
+    }
+
+    // Require auth then init
+    requireAuth(async (u) => {
+      // u is the signed-in user object; use u.uid for creator
+      try {
+        loadClasses(u.uid);
+        loadNotices();
+        preloadProfile(u.uid);
+      } catch (err) {
+        console.error('init error', err);
+        alert('Initialization failed: ' + (err.message || err));
+      }
+    });
+
+    document.getElementById('logoutBtn')?.addEventListener('click', () => {
+      signOut(auth).then(() => window.location.href = "index.html");
+    });
+
+    // Create class handler
+    const classForm = document.getElementById('classForm');
+    const createBtn = document.getElementById('createClassBtn');
+    classForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        if (!auth?.currentUser) { alert('Not signed in'); return; }
+        const nameEl = document.getElementById('classNameInput');
+        const codeEl = document.getElementById('classCodeInput');
+        const name = (nameEl?.value || '').trim();
+        let code = (codeEl?.value || '').trim();
+        if (!name) return alert('Please enter a class name.');
+        // generate code if empty
+        if (!code) code = 'CC-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        // disable button to prevent double submits
+        createBtn.disabled = true; createBtn.textContent = 'Creating...';
+        await addDoc(collection(db, "classes"), {
+          name,
+          code,
+          creator: auth.currentUser.uid,
+          members: [auth.currentUser.uid],
+          createdAt: serverTimestamp()
+        });
+        showToast(`Class "${name}" created (code: ${code}).`, 3000);
+        classForm.reset();
+      } catch (err) {
+        console.error('create class failed', err);
+        alert('Failed to create class: ' + (err.message || err));
+      } finally {
+        createBtn.disabled = false; createBtn.textContent = 'Create';
+      }
+    });
+
+    // ✅ Fixed Open button link / live list
+    function loadClasses(uid) {
+      const list = document.getElementById('classList');
+      try {
+        const qCreator = query(collection(db, 'classes'), where('creator', '==', uid));
+        onSnapshot(qCreator, snap => {
+          list.innerHTML = "";
+          if (snap.empty) {
+            list.innerHTML = `<div class="notice-card">You haven't created any classes yet.</div>`;
+            return;
+          }
+          snap.forEach(docSnap => {
+            const c = docSnap.data();
+            const id = docSnap.id;
+            const div = document.createElement('div');
+            div.className = 'class-card';
+            div.innerHTML = `
+              <strong>${c.name || '(Untitled Class)'}</strong><br>
+              Code: <span style="color:#18ab91">${c.code || '-'}</span><br>
+              Members: ${(c.members || []).length}<br>
+              <div style="margin-top:8px; display:flex; gap:8px;">
+                <button class="small-btn" onclick="window.open('classroom.html?classId=${id}', '_blank', 'noopener')">Open</button>
+                <button class="small-btn" data-remove="${id}" style="background:#fff;border:1px solid #e74c3c;color:#e74c3c">Remove</button>
+              </div>`;
+            list.appendChild(div);
+          });
+          // attach remove handlers
+          list.querySelectorAll('[data-remove]').forEach(btn => {
+            btn.onclick = async (ev) => {
+              try {
+                const cid = btn.getAttribute('data-remove');
+                if (!confirm('Remove this class? This cannot be undone.')) return;
+                // delete class doc (and optionally its subcollections) - basic removal:
+                await import('./server.js').then(mod => {
+                  const { deleteDoc, doc } = mod;
+                  return deleteDoc(doc(db, 'classes', cid));
+                });
+                showToast('Class removed.', 2500);
+              } catch (err) {
+                console.error('remove class failed', err);
+                alert('Failed to remove class: ' + (err.message || err));
+              }
+            };
+          });
+        });
+      } catch (err) {
+        console.error('loadClasses error', err);
+        list.innerHTML = `<div class="notice-card">Failed to load classes.</div>`;
+      }
+    }
+
+    // Notices (sorted newest first)
+    function loadNotices() {
+      const list = document.getElementById('noticeList');
+      try {
+        const q = query(collection(db, 'notices'), orderBy('createdAt', 'desc'));
+        onSnapshot(q, snap => {
+          list.innerHTML = "";
+          if (snap.empty) {
+            list.innerHTML = `<div class="notice-card">No notices yet.</div>`;
+            return;
+          }
+          snap.forEach(docSnap => {
+            const n = docSnap.data();
+            const item = document.createElement('div');
+            item.className = 'notice-card';
+            item.innerHTML = `
+              <strong>${n.title}</strong><br>
+              <p style="margin:4px 0 6px;">${n.message || ""}</p>
+              ${n.fileURL ? `<a href="${n.fileURL}" target="_blank" rel="noopener" style="color:#18ab91;">📎 ${n.fileName || "Attachment"}</a><br>` : ""}
+              <span style="font-size:12px;color:#666;">${n.createdAt?.toDate?.()?.toLocaleString?.() || ""}</span>`;
+            list.appendChild(item);
+          });
+        });
+      } catch (err) {
+        console.error('loadNotices error', err);
+        list.innerHTML = `<div class="notice-card">Failed to load notices.</div>`;
+      }
+    }
+
+    // Profile modal
+    const profileBtn = document.getElementById('profileBtn');
+    const profileModal = document.getElementById('profileModal');
+    const closeProfile = document.getElementById('closeProfile');
+    const profName = document.getElementById('profName');
+    const profEmail = document.getElementById('profEmail');
+    const profRole = document.getElementById('profRole');
+    const profBio = document.getElementById('profBio');
+    const saveProfile = document.getElementById('saveProfile');
+
+    async function preloadProfile(uid) {
+      try {
+        const p = await getUserProfile(uid);
+        profName.value = p?.name || "";
+        profEmail.value = p?.email || auth.currentUser.email || "";
+        profRole.value = p?.role || "Faculty";
+        profBio.value = p?.bio || "";
+      } catch (err) {
+        console.error('preloadProfile failed', err);
+      }
+    }
+
+    profileBtn?.addEventListener('click', async () => {
+      await preloadProfile(auth.currentUser.uid);
+      profileModal.style.display = 'flex';
+    });
+    closeProfile?.addEventListener('click', () => profileModal.style.display = 'none');
+    saveProfile?.addEventListener('click', async () => {
+      try {
+        await saveUserProfile(auth.currentUser.uid, {
+          name: profName.value,
+          email: profEmail.value,
+          role: profRole.value,
+          bio: profBio.value,
+          updatedAt: new Date()
+        });
+        showToast('Profile saved!');
+        profileModal.style.display = 'none';
+      } catch (err) {
+        console.error('saveProfile failed', err);
+        alert('Failed to save profile: ' + (err.message || err));
+      }
+    });
+
+    // Post notice modal handlers (keeps pattern, uses toast on success)
+    const postNoticeModal = document.getElementById('postNoticeModal');
+    const closePostNotice = document.getElementById('closePostNotice');
+    closePostNotice?.addEventListener('click', () => postNoticeModal.style.display = 'none');
+    document.getElementById('postNoticeBtn')?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try {
+        if (!auth?.currentUser) { alert('Not signed in'); return; }
+        const title = document.getElementById('noticeTitleInput').value.trim();
+        const message = document.getElementById('noticeMessageInput').value.trim();
+        const file = document.getElementById('noticeFileInput').files[0];
+        if (!title || !message) return alert('Fill all fields');
+        let fileURL = '', fileName = '';
+        if (file) {
+          if (!file.type.includes('pdf') && !file.type.includes('image')) return alert('Only PDF or Images allowed');
+          const ref = sRef(storage, 'notices/' + Date.now() + '_' + file.name);
+          const up = await uploadBytesResumable(ref, file);
+          fileURL = await getDownloadURL(up.ref);
+          fileName = file.name;
+        }
+        await addDoc(collection(db, 'notices'), { title, message, fileURL, fileName, sender: auth.currentUser.email, createdAt: serverTimestamp() });
+        // success notification + close modal
+        showToast('✅ Notice posted', 2500);
+        postNoticeModal.style.display = 'none';
+        document.getElementById('noticeForm').reset();
+        // switch to notices tab
+        document.querySelectorAll('[data-tab]').forEach(tab => {
+          if (tab.getAttribute('data-tab') === 'notices') {
+            tab.click?.();
+          }
+        });
+      } catch (err) {
+        console.error('post notice failed', err);
+        alert('Failed to post notice: ' + (err.message || err));
+      }
+    });
+
+  </script>
+</body>
+
+</html>

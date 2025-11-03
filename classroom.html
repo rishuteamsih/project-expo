@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Classroom – Faculty</title>
+  <link rel="icon" href="CAMPUS CONNECT.png" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #f2f4f8;
+      padding: 20px;
+    }
+
+    /* HEADER */
+    header {
+      background: linear-gradient(180deg, #20b39a 0%, #17a88a 100%);
+      color: #fff;
+      text-align: center;
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    header img.logo {
+      height: 56px;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+
+    header .title-block {
+      display: inline-block;
+      vertical-align: middle;
+      text-align: left;
+    }
+
+    header h1 {
+      font-size: 20px;
+      margin: 0;
+    }
+
+    header p {
+      font-size: 13px;
+      margin: 0;
+      opacity: 0.95;
+    }
+
+    .profile-btn {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #fff;
+      color: #18ab91;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .profile-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .dash-tabs {
+      width: 100%;
+      max-width: 900px;
+      margin: 14px auto 8px;
+    }
+
+    .tabs-bar {
+      background: #198b6f;
+      color: #fff;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+      font-weight: 700;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      color: inherit;
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    .tab.active {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #fff;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #eee;
+      margin-bottom: 12px;
+    }
+
+    .list-item {
+      border: 1px solid #eee;
+      padding: 10px;
+      border-radius: 8px;
+      background: #fafafa;
+      margin-bottom: 8px;
+    }
+
+    .muted {
+      font-size: 12px;
+      color: #666;
+      margin-top: 6px;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-top: 6px;
+    }
+
+    .btn {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: none;
+      background: #18ab91;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn.secondary {
+      background: #fff;
+      color: #18ab91;
+      border: 1px solid #18ab91;
+    }
+
+    /* Attendance styles */
+    .attendance-toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    #attendanceList {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .attendance-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #eee;
+      background: #fafafa;
+      flex-wrap: wrap;
+    }
+
+    .attendance-row .name {
+      min-width: 260px;
+      max-width: 520px;
+    }
+
+    /* Buttons styling */
+    .attendance-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .present-btn,
+    .absent-btn {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      background: #fff;
+      color: #18ab91;
+      min-width: 86px;
+    }
+
+    .present-btn {
+      border-color: #18ab91;
+      color: #18ab91;
+    }
+
+    .present-btn.active {
+      background: #18ab91;
+      color: #fff;
+      border-color: transparent;
+    }
+
+    /* Absent styling: red when active; neutral outline otherwise */
+    .absent-btn {
+      border-color: #e74c3c;
+      color: #e74c3c;
+      background: #fff;
+    }
+
+    .absent-btn.active {
+      background: #e74c3c;
+      color: #fff;
+      border-color: transparent;
+    }
+
+    /* When disabled (holiday) */
+    .attendance-row button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    @media (max-width:880px) {
+      .tabs-bar {
+        gap: 8px;
+        padding: 10px;
+        justify-content: center;
+      }
+
+      header img.logo {
+        display: none;
+      }
+
+      .attendance-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+
+  <!-- SheetJS (Excel export) -->
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+  <header>
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-direction:column;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <img class="logo" src="CAMPUS CONNECT.png" alt="logo">
+        <div class="title-block">
+          <h1 id="classTitle">Classroom</h1>
+          <p id="classMeta">Loading class info…</p>
+        </div>
+      </div>
+    </div>
+
+    <button id="profileBtn" class="profile-btn" title="Profile">👤</button>
+  </header>
+
+  <nav class="dash-tabs" aria-label="Classroom navigation">
+    <div class="tabs-bar" role="tablist">
+      <div class="tab" data-tab="questions">💬 Questions</div>
+      <div class="tab" data-tab="notices">📢 Notices</div>
+      <div class="tab" data-tab="notes">📚 Notes</div>
+      <div class="tab" data-tab="assignments">📝 Assignments</div>
+      <div class="tab" data-tab="submissions">📥 Submissions</div>
+      <div class="tab" data-tab="students">📊 Attendance</div>
+    </div>
+  </nav>
+
+  <main>
+    <!-- Questions (default) -->
+    <section id="sec-questions" class="card" style="display:block;">
+      <h3>💬 Student Questions</h3>
+      <div id="questionsArea">
+        <div class="muted">Loading questions…</div>
+      </div>
+    </section>
+
+    <!-- Notices -->
+    <section id="sec-notices" class="card" style="display:none;">
+      <h3>📢 Post Class Notice</h3>
+      <form id="classNoticeForm" style="margin-top:8px;">
+        <input id="cNoticeTitle" placeholder="Notice title" required>
+        <textarea id="cNoticeMsg" rows="3" placeholder="Write the notice..." required></textarea>
+        <input type="file" id="cNoticeFile" accept="image/*,.pdf">
+        <div style="margin-top:8px;display:flex;gap:8px;">
+          <button class="btn" type="submit">Post Notice</button>
+          <button type="button" id="cancelNotice" class="btn secondary">Reset</button>
+        </div>
+      </form>
+      <hr style="margin:12px 0;">
+      <h4>Recent Notices</h4>
+      <div id="classNoticesList" style="margin-top:8px;">
+        <div class="muted">Loading notices…</div>
+      </div>
+    </section>
+
+    <!-- Notes -->
+    <section id="sec-notes" class="card" style="display:none;">
+      <h3>📚 Class Notes</h3>
+      <form id="notesUploadForm" style="margin-top:8px;">
+        <input id="noteTitle" placeholder="Note title" required>
+        <textarea id="noteDesc" rows="2" placeholder="Short description (optional)"></textarea>
+        <input type="file" id="noteFile" accept="*/*" required>
+        <div class="flex" style="margin-top:8px;">
+          <button class="btn" type="submit">Upload Note</button>
+          <button type="button" id="cancelNoteUpload" class="btn secondary">Reset</button>
+          <div class="right" style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+            <label class="muted" style="margin-right:6px;">Sort:</label>
+            <select id="notesSort">
+              <option value="desc">Newest first</option>
+              <option value="asc">Oldest first</option>
+            </select>
+          </div>
+        </div>
+      </form>
+      <hr style="margin:12px 0;">
+      <div id="notesList" style="margin-top:8px;">
+        <div class="muted">Loading notes…</div>
+      </div>
+    </section>
+
+    <!-- Assignments -->
+    <section id="sec-assignments" class="card" style="display:none;">
+      <h3>📝 Create Assignment</h3>
+      <form id="assignmentForm" style="margin-top:8px;">
+        <input id="assignTitle" placeholder="Assignment title" required>
+        <textarea id="assignDesc" rows="3" placeholder="Instructions / description"></textarea>
+        <input type="date" id="assignDue">
+        <input type="file" id="assignFile" accept="image/*,.pdf">
+        <div style="margin-top:8px;display:flex;gap:8px;">
+          <button class="btn" type="submit">Post Assignment</button>
+          <button type="button" id="cancelAssignment" class="btn secondary">Reset</button>
+        </div>
+      </form>
+      <hr style="margin:12px 0;">
+      <h4>Assignments (recent)</h4>
+      <div id="assignmentsList" style="margin-top:8px;">
+        <div class="muted">Loading assignments…</div>
+      </div>
+    </section>
+
+    <!-- Submissions -->
+    <section id="sec-submissions" class="card" style="display:none;">
+      <h3>📥 Submissions</h3>
+      <div id="submissionsArea">
+        <div class="muted">Loading submissions…</div>
+      </div>
+    </section>
+
+    <!-- Students (REPLACED with Attendance UI) -->
+    <section id="sec-students" class="card" style="display:none;">
+      <h3>📊 Attendance</h3>
+
+      <div class="attendance-toolbar">
+        <label class="muted">Select date:</label>
+        <input type="date" id="attendanceDate">
+        <label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" id="attendanceHoliday">
+          Holiday</label>
+        <div style="margin-left:auto;display:flex;gap:8px;">
+          <button id="saveAttendance" class="btn">Save Attendance</button>
+          <button id="downloadXlsx" class="btn">Download Excel (month)</button>
+        </div>
+      </div>
+
+      <div id="attendanceHint" class="muted">No default selected. Pick a date to load existing attendance (if any).
+        Click a button to mark Present or Absent.</div>
+
+      <div id="attendanceList"></div>
+    </section>
+  </main>
+
+  <!-- Profile modal -->
+  <div id="profileModal"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;z-index:9999;">
+    <div style="background:#fff;padding:18px;border-radius:12px;max-width:420px;width:92%;">
+      <h3 style="color:#18ab91;margin-top:0;">Your Profile</h3>
+      <div id="profileContents">Loading…</div>
+      <div style="margin-top:10px;text-align:right;"><button id="closeProfile" class="btn secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import {
+      requireAuth, auth, db, storage,
+      collection, query, where, orderBy, onSnapshot,
+      addDoc, serverTimestamp, sRef, uploadBytesResumable, getDownloadURL,
+      doc, getDoc, getDocs, updateDoc, setDoc
+    } from "./server.js";
+
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+    const $id = id => document.getElementById(id);
+
+    // Tab switching (unchanged)
+    $$('[data-tab]').forEach(t => {
+      t.addEventListener('click', () => {
+        const key = t.getAttribute('data-tab');
+        ['questions', 'notices', 'notes', 'assignments', 'submissions', 'students'].forEach(k => {
+          const el = $id('sec-' + k);
+          if (el) el.style.display = (k === key) ? 'block' : 'none';
+        });
+        $$('[data-tab]').forEach(x => x.classList.toggle('active', x === t));
+      });
+    });
+    // default Questions visible
+    $$('[data-tab]')[0]?.classList.add('active');
+
+    // profile modal
+    $('#profileBtn').addEventListener('click', async () => {
+      profileModal.style.display = 'flex';
+      if (!auth || !auth.currentUser) { profileContents.innerText = 'Not signed in'; return; }
+      try {
+        const snap = await getDoc(doc(db, 'users', auth.currentUser.uid));
+        const p = snap.exists() ? snap.data() : {};
+        profileContents.innerHTML = `
+          <div><strong>Name:</strong> ${p.name || auth.currentUser.displayName || '—'}</div>
+          <div><strong>Email:</strong> ${p.email || auth.currentUser.email || '—'}</div>
+          <div><strong>Role:</strong> ${p.role || '—'}</div>
+          <div style="margin-top:8px;"><strong>Bio:</strong> <div class="muted">${p.bio || ''}</div></div>
+        `;
+      } catch (e) { profileContents.innerText = 'Failed to load profile'; console.error(e); }
+    });
+    $('#closeProfile').addEventListener('click', () => profileModal.style.display = 'none');
+
+    // Class context & attendance state
+    let me = null, classId = null, classRef = null, classData = null;
+    let notesCache = [];
+    let canReply = false;
+
+    let students = []; // [{ uid, name, email, rollNo }]
+    let attendanceMap = {}; // uid -> 'present'|'absent'
+    let currentDate = null;
+
+    function getParam(name) { return new URLSearchParams(location.search).get(name); }
+    function formatTS(ts) {
+      try {
+        if (!ts) return '';
+        const date = (typeof ts.toDate === 'function') ? ts.toDate() : new Date(ts);
+        return date.toLocaleString();
+      } catch (e) { return ''; }
+    }
+
+    requireAuth(async (u) => {
+      me = u;
+      classId = getParam('classId') || getParam('id');
+      if (!classId) {
+        alert('No class selected. Open this page from the dashboard with ?classId=CLASS_ID');
+        $('#classMeta').textContent = 'No class selected';
+        return;
+      }
+      classRef = doc(db, 'classes', classId);
+      await loadClassMeta();
+
+      try {
+        const userSnap = await getDoc(doc(db, 'users', me.uid));
+        const udata = userSnap.exists() ? userSnap.data() : {};
+        const role = (udata.role || '').toString().toLowerCase();
+        canReply = (me.uid === classData.creator) || ['faculty', 'hod', 'admin', 'teacher'].includes(role);
+      } catch (e) {
+        console.warn('could not determine user role', e);
+        canReply = (me.uid === classData.creator);
+      }
+
+      wireForms();
+      initWatchers();
+      await loadStudents(); // populate attendance UI
+    });
+
+    async function loadClassMeta() {
+      const snap = await getDoc(classRef);
+      if (!snap.exists()) { alert('Class not found'); return; }
+      classData = snap.data();
+      $('#classTitle').textContent = classData.name || 'Classroom';
+      $('#classMeta').textContent = `Code: ${classData.code} · Members: ${(classData.members || []).length}`;
+    }
+
+    function wireForms() {
+      // Notices (unchanged)
+      $('#classNoticeForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const title = $('#cNoticeTitle').value.trim();
+        const message = $('#cNoticeMsg').value.trim();
+        const file = $('#cNoticeFile').files[0];
+        if (!title || !message) return alert('Fill all fields');
+        let fileURL = '', fileName = '';
+        if (file) {
+          if (!file.type.includes('image') && !file.type.includes('pdf')) {
+            return alert('Only images or pdf files allowed');
+          }
+          const ref = sRef(storage, `classes/${classId}/notices/${Date.now()}_${file.name}`);
+          const up = await uploadBytesResumable(ref, file);
+          fileURL = await getDownloadURL(up.ref);
+          fileName = file.name;
+        }
+        await addDoc(collection(db, 'classes', classId, 'notices'), {
+          title, message, fileURL, fileName, authorId: me.uid, authorEmail: me.email, createdAt: serverTimestamp()
+        });
+        alert('Notice posted');
+        e.target.reset();
+        $$('[data-tab]').forEach(x => x.classList.toggle('active', x.getAttribute('data-tab') === 'notices'));
+        document.getElementById('sec-notices').style.display = 'block';
+        ['questions', 'notes', 'assignments', 'submissions', 'students'].forEach(k => { const el = document.getElementById('sec-' + k); if (el) el.style.display = 'none'; });
+      });
+      $('#cancelNotice').addEventListener('click', () => $('#classNoticeForm').reset());
+
+      // Notes upload (unchanged)
+      $('#notesUploadForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const title = $('#noteTitle').value.trim();
+        const desc = $('#noteDesc').value.trim();
+        const file = $('#noteFile').files[0];
+        if (!title || !file) return alert('Add title and choose a file');
+        const path = `classes/${classId}/notes/${Date.now()}_${file.name}`;
+        const ref = sRef(storage, path);
+        const up = await uploadBytesResumable(ref, file);
+        const url = await getDownloadURL(up.ref);
+        await addDoc(collection(db, 'classes', classId, 'notes'), {
+          title, description: desc, fileURL: url, fileName: file.name,
+          uploaderId: me.uid, uploaderEmail: me.email || '', createdAt: serverTimestamp()
+        });
+        alert('Note uploaded');
+        e.target.reset();
+        $$('[data-tab]').forEach(x => x.classList.toggle('active', x.getAttribute('data-tab') === 'notes'));
+        document.getElementById('sec-notes').style.display = 'block';
+        ['questions', 'notices', 'assignments', 'submissions', 'students'].forEach(k => { const el = document.getElementById('sec-' + k); if (el) el.style.display = 'none'; });
+      });
+      $('#cancelNoteUpload').addEventListener('click', () => $('#notesUploadForm').reset());
+
+      // Assignments (unchanged)
+      $('#assignmentForm').addEventListener('submit', async e => {
+        e.preventDefault();
+        const title = $('#assignTitle').value.trim();
+        const desc = $('#assignDesc').value.trim();
+        const due = $('#assignDue').value || null;
+        const file = $('#assignFile').files[0];
+        if (!title) return alert('Please add a title');
+        let fileURL = '', fileName = '';
+        if (file) {
+          const ref = sRef(storage, `classes/${classId}/assignments/${Date.now()}_${file.name}`);
+          const up = await uploadBytesResumable(ref, file);
+          fileURL = await getDownloadURL(up.ref);
+          fileName = file.name;
+        }
+        await addDoc(collection(db, 'classes', classId, 'assignments'), {
+          title, description: desc, dueDate: due, fileURL, fileName, postedBy: me.uid, createdAt: serverTimestamp()
+        });
+        alert('Assignment posted');
+        e.target.reset();
+        $$('[data-tab]').forEach(x => x.classList.toggle('active', x.getAttribute('data-tab') === 'assignments'));
+        document.getElementById('sec-assignments').style.display = 'block';
+        ['questions', 'notices', 'notes', 'submissions', 'students'].forEach(k => { const el = document.getElementById('sec-' + k); if (el) el.style.display = 'none'; });
+      });
+      $('#cancelAssignment').addEventListener('click', () => $('#assignmentForm').reset());
+
+      // Save attendance to Firestore
+      $id('saveAttendance').addEventListener('click', async () => {
+        const date = $id('attendanceDate').value;
+        if (!date) return alert('Pick a date first.');
+        try {
+          const isHoliday = $id('attendanceHoliday').checked === true;
+          const docRef = doc(db, 'classes', classId, 'attendance', date);
+          if (isHoliday) {
+            await setDoc(docRef, { date, holiday: true, createdAt: serverTimestamp() });
+            alert('Holiday saved for ' + date);
+            // after saving, keep UI consistent
+            await loadAttendanceForDate(date);
+            return;
+          }
+          // records: default to absent only for storage if teacher explicitly marked absent,
+          // but we store present for those marked present and absent for those marked absent.
+          const records = {};
+          students.forEach(s => {
+            if (attendanceMap[s.uid] === 'present') records[s.uid] = 'present';
+            else if (attendanceMap[s.uid] === 'absent') records[s.uid] = 'absent';
+            else records[s.uid] = 'absent'; // explicit storage rule: unselected treat as absent in DB
+          });
+          await setDoc(docRef, { date, records, by: me.uid, createdAt: serverTimestamp() });
+          alert('Attendance saved for ' + date);
+          await loadAttendanceForDate(date);
+        } catch (err) {
+          console.error('saveAttendance failed', err);
+          alert('Save failed: ' + (err.message || err));
+        }
+      });
+
+      // Download Excel month (improved guard + error handling)
+      $id('downloadXlsx').addEventListener('click', async () => {
+        try {
+          // guard: ensure SheetJS is loaded
+          if (typeof XLSX === 'undefined') {
+            alert('Spreadsheet library not loaded. Please check your network connection and try again.');
+            return;
+          }
+
+          const dateStr = $id('attendanceDate').value;
+          if (!dateStr) return alert('Pick a date in the month you want to export (use the date input).');
+
+          const dt = new Date(dateStr);
+          const year = dt.getFullYear(), month = dt.getMonth();
+          const days = [];
+          const d = new Date(year, month, 1);
+          while (d.getMonth() === month) { days.push(new Date(d)); d.setDate(d.getDate() + 1); }
+
+          const dataForDates = {};
+          // fetch attendance docs for each day (sequential to avoid heavy parallel load)
+          for (const dd of days) {
+            const key = `${dd.getFullYear()}-${String(dd.getMonth() + 1).padStart(2, '0')}-${String(dd.getDate()).padStart(2, '0')}`;
+            try {
+              const snap = await getDoc(doc(db, 'classes', classId, 'attendance', key));
+              dataForDates[key] = snap.exists() ? snap.data() : null;
+            } catch (e) {
+              console.warn('failed to fetch attendance for', key, e);
+              dataForDates[key] = null;
+            }
+          }
+
+          buildAndDownloadXlsx(days, dataForDates);
+        } catch (err) {
+          console.error('downloadXlsx failed', err);
+          alert('Failed to prepare the Excel file: ' + (err.message || err));
+        }
+      });
+
+      // attendance date changed -> load
+      $id('attendanceDate').addEventListener('change', async (e) => {
+        const date = e.target.value;
+        if (!date) return;
+        currentDate = date;
+        await loadAttendanceForDate(date);
+      });
+
+      // holiday toggle should re-render rows
+      $id('attendanceHoliday').addEventListener('change', () => {
+        renderAttendanceRows();
+      });
+    }
+
+    function initWatchers() {
+      // QUESTIONS
+      onSnapshot(query(collection(db, 'classes', classId, 'questions'), orderBy('createdAt', 'desc')), snap => {
+        const c = $('#questionsArea'); c.innerHTML = '';
+        if (snap.empty) { c.innerHTML = '<div class="muted">No questions yet.</div>'; return; }
+        snap.forEach(async docSnap => {
+          const q = docSnap.data();
+          const qid = docSnap.id;
+          const div = document.createElement('div'); div.className = 'list-item';
+          const titleHtml = `<div class="question-title">${q.title || '(No title)'}</div>`;
+          const msgHtml = `<div style="margin-top:4px;">${q.message || ''}</div>`;
+          const fileHtml = q.fileURL ? `<div style="margin-top:8px;"><a href="${q.fileURL}" target="_blank" rel="noopener">📎 ${q.fileName || 'Attachment'}</a></div>` : '';
+          const metaHtml = `<div class="muted" style="margin-top:8px;">Asked: ${formatTS(q.createdAt)} • ${q.studentName || q.studentEmail || 'Student'}</div>`;
+          div.innerHTML = titleHtml + msgHtml + fileHtml + metaHtml;
+          if (q.reply) {
+            const replyDiv = document.createElement('div'); replyDiv.className = 'reply-text';
+            replyDiv.innerHTML = `<strong>Reply:</strong><div style="margin-top:6px;">${q.reply}</div>
+              <div class="muted" style="margin-top:6px;">Replied: ${formatTS(q.repliedAt)}${q.repliedBy ? ' • by ' + (q.repliedBy === me.uid ? 'you' : q.repliedBy) : ''}</div>`;
+            div.appendChild(replyDiv);
+          } else {
+            if (canReply) {
+              const row = document.createElement('div'); row.className = 'reply-row';
+              const inp = document.createElement('input'); inp.type = 'text'; inp.placeholder = 'Write a reply...'; inp.maxLength = 2000;
+              inp.setAttribute('aria-label', 'Reply input');
+              const btn = document.createElement('button'); btn.className = 'btn'; btn.textContent = 'Reply';
+              btn.addEventListener('click', async () => {
+                const text = inp.value.trim(); if (!text) return alert('Please type a reply.');
+                btn.disabled = true; btn.textContent = 'Sending...';
+                try {
+                  const qSnap = await getDoc(doc(db, 'classes', classId, 'questions', qid));
+                  if (qSnap.exists() && qSnap.data().reply) { alert('A reply was already posted by someone else.'); return; }
+                  await updateDoc(doc(db, 'classes', classId, 'questions', qid), { reply: text, repliedBy: me.uid, repliedAt: serverTimestamp() });
+                } catch (err) { console.error('reply failed', err); alert('Failed to send reply: ' + (err.message || err)); }
+                finally { btn.disabled = false; btn.textContent = 'Reply'; }
+              });
+              row.appendChild(inp); row.appendChild(btn); div.appendChild(row);
+            } else {
+              const note = document.createElement('div'); note.className = 'muted'; note.style.marginTop = '8px'; note.textContent = 'No reply yet.';
+              div.appendChild(note);
+            }
+          }
+          c.appendChild(div);
+        });
+      });
+
+      // NOTICES
+      onSnapshot(query(collection(db, 'classes', classId, 'notices'), orderBy('createdAt', 'desc')), snap => {
+        const el = $('#classNoticesList'); el.innerHTML = '';
+        if (snap.empty) { el.innerHTML = '<div class="muted">No notices yet.</div>'; return; }
+        snap.forEach(d => {
+          const n = d.data();
+          const div = document.createElement('div'); div.className = 'list-item';
+          div.innerHTML = `<strong>${n.title}</strong>
+            <div class="muted" style="margin-top:6px;">${formatTS(n.createdAt)}${n.authorEmail ? ' • ' + n.authorEmail : ''}</div>
+            <div style="margin-top:8px;">${n.message}</div>
+            ${n.fileURL ? `<div style="margin-top:8px;"><a href="${n.fileURL}" target="_blank" rel="noopener">📎 ${n.fileName || 'Attachment'}</a></div>` : ''}`;
+          el.appendChild(div);
+        });
+      });
+
+      // NOTES (cache)
+      const notesQ = query(collection(db, 'classes', classId, 'notes'), orderBy('createdAt', 'desc'));
+      onSnapshot(notesQ, snap => {
+        notesCache = [];
+        snap.forEach(d => { const n = d.data(); notesCache.push({ id: d.id, ...n }); });
+        renderNotes();
+      });
+
+      // ASSIGNMENTS
+      onSnapshot(query(collection(db, 'classes', classId, 'assignments'), orderBy('createdAt', 'desc')), snap => {
+        const el = $('#assignmentsList'); el.innerHTML = '';
+        if (snap.empty) { el.innerHTML = '<div class="muted">No assignments yet.</div>'; return; }
+        snap.forEach(aDoc => {
+          const a = aDoc.data();
+          const div = document.createElement('div'); div.className = 'list-item';
+          div.innerHTML = `<strong>${a.title}</strong>
+            <div class="muted" style="margin-top:6px;">Posted: ${formatTS(a.createdAt)}${a.dueDate ? ' • Due: ' + a.dueDate : ''}</div>
+            <div style="margin-top:8px;">${a.description || ''}</div>
+            ${a.fileURL ? `<div style="margin-top:8px;"><a href="${a.fileURL}" target="_blank" rel="noopener">📎 ${a.fileName || 'Attachment'}</a></div>` : ''}`;
+          el.appendChild(div);
+        });
+      });
+
+      // SUBMISSIONS
+      onSnapshot(query(collection(db, 'classes', classId, 'submissions'), orderBy('createdAt', 'desc')), snap => {
+        const el = $('#submissionsArea'); el.innerHTML = '';
+        if (snap.empty) { el.innerHTML = '<div class="muted">No submissions.</div>'; return; }
+        snap.forEach(sDoc => {
+          const s = sDoc.data();
+          const div = document.createElement('div'); div.className = 'list-item';
+          div.innerHTML = `<strong>${s.studentName || s.studentEmail}</strong>
+            <div class="muted" style="margin-top:6px;">Submitted: ${formatTS(s.createdAt)}</div>
+            <div style="margin-top:6px;">${s.title ? `<strong>${s.title}</strong><br>` : ''}${s.message || ''}</div>
+            ${s.fileURL ? `<div style="margin-top:8px;"><a href="${s.fileURL}" target="_blank" rel="noopener">📎 View Submission</a></div>` : ''}`;
+          el.appendChild(div);
+        });
+      });
+
+      // STUDENTS: listen to class doc changes -> reload students for attendance
+      onSnapshot(classRef, snap => {
+        if (!snap.exists()) return;
+        classData = snap.data();
+        $('#classMeta').textContent = `Code: ${classData.code} · Members: ${(classData.members || []).length}`;
+        loadStudents();
+      });
+    }
+
+    function renderNotes() {
+      const el = $('#notesList'); el.innerHTML = '';
+      const sort = $('#notesSort')?.value || 'desc';
+      if (!notesCache || notesCache.length === 0) { el.innerHTML = '<div class="muted">No notes uploaded yet.</div>'; return; }
+      const arr = [...notesCache];
+      arr.sort((a, b) => {
+        const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+        const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+        return (sort === 'asc') ? (ta - tb) : (tb - ta);
+      });
+      arr.forEach(n => {
+        const div = document.createElement('div'); div.className = 'list-item';
+        div.innerHTML = `<strong>${n.title}</strong>
+          <div class="muted" style="margin-top:6px;">${formatTS(n.createdAt)}${n.uploaderEmail ? ' • ' + n.uploaderEmail : ''}</div>
+          <div style="margin-top:8px;">${n.description ? n.description + '<br>' : ''}${n.fileName ? `<em>File:</em> ${n.fileName}` : ''}</div>
+          ${n.fileURL ? `<div style="margin-top:8px;"><a href="${n.fileURL}" target="_blank" rel="noopener">⬇ Download</a></div>` : ''}`;
+        el.appendChild(div);
+      });
+    }
+
+    document.addEventListener('change', (e) => { if (e.target && e.target.id === 'notesSort') renderNotes(); });
+
+    // --- REPLACED loadStudents: filters out staff roles (faculty/teacher/hod/admin) ---
+    async function loadStudents() {
+      const el = $('#studentsArea'); if (el) el.innerHTML = '';
+      try {
+        const snap = await getDoc(classRef);
+        if (!snap.exists()) { students = []; renderAttendanceRows(); return; }
+        const cdata = snap.data();
+        const members = cdata.members || [];
+        if (members.length === 0) { students = []; renderAttendanceRows(); return; }
+
+        // fetch user docs in parallel
+        const userPromises = members.map(id =>
+          getDoc(doc(db, 'users', id)).then(snap => ({ id, data: snap.exists() ? snap.data() : null })).catch(() => ({ id, data: null }))
+        );
+        const results = await Promise.all(userPromises);
+
+        // Filter out staff (faculty/admin/teacher/hod) and build student entries
+        students = results.map(r => {
+          const u = r.data || {};
+          const email = u.email || '';
+          const roll = (email.split('@')[0] || '').toLowerCase();
+          return { uid: r.id, name: u.name || u.displayName || 'Student', email, rollNo: roll, role: (u.role || '').toString().toLowerCase() };
+        })
+          // remove staff
+          .filter(u => !['faculty', 'teacher', 'hod', 'admin'].includes(u.role));
+
+        // sort by name
+        students.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+        // clear attendance map (no default selection visually)
+        attendanceMap = {};
+        renderAttendanceRows();
+      } catch (err) {
+        console.error('loadStudents failed', err);
+        students = [];
+        renderAttendanceRows();
+      }
+    }
+
+    async function loadAttendanceForDate(dateStr) {
+      if (!dateStr) return;
+      currentDate = dateStr;
+      try {
+        const aSnap = await getDoc(doc(db, 'classes', classId, 'attendance', dateStr));
+        attendanceMap = {};
+        if (aSnap.exists()) {
+          const ad = aSnap.data();
+          if (ad.holiday) {
+            $id('attendanceHoliday').checked = true;
+            // when holiday, we won't set present/absent states
+          } else {
+            $id('attendanceHoliday').checked = false;
+            const records = ad.records || {};
+            students.forEach(s => {
+              // only set those explicitly saved in DB
+              if (records[s.uid] === 'present') attendanceMap[s.uid] = 'present';
+              else if (records[s.uid] === 'absent') attendanceMap[s.uid] = 'absent';
+              // if not present in records -> leave undefined (no default selection)
+            });
+          }
+        } else {
+          $id('attendanceHoliday').checked = false;
+          attendanceMap = {}; // fresh; no default selected
+        }
+        renderAttendanceRows();
+      } catch (err) { console.error('loadAttendanceForDate failed', err); }
+    }
+
+    function renderAttendanceRows() {
+      const container = $id('attendanceList');
+      container.innerHTML = '';
+      if (!students || students.length === 0) {
+        container.innerHTML = '<div class="muted">No students found for this class.</div>';
+        return;
+      }
+      const holiday = $id('attendanceHoliday').checked === true;
+      students.forEach(s => {
+        const row = document.createElement('div'); row.className = 'attendance-row'; row.id = 'stu-' + s.uid;
+        const name = document.createElement('div'); name.className = 'name';
+        name.innerHTML = `<strong>${escapeHtml(s.name)}</strong><div class="muted" style="font-size:12px;">${escapeHtml(s.email)} • Roll: ${escapeHtml(s.rollNo)}</div>`;
+
+        const actions = document.createElement('div'); actions.className = 'attendance-actions';
+        const presentBtn = document.createElement('button'); presentBtn.className = 'present-btn'; presentBtn.textContent = 'Present';
+        const absentBtn = document.createElement('button'); absentBtn.className = 'absent-btn'; absentBtn.textContent = 'Absent';
+
+        presentBtn.addEventListener('click', () => {
+          attendanceMap[s.uid] = 'present';
+          updateRowVisual(s.uid);
+        });
+        absentBtn.addEventListener('click', () => {
+          attendanceMap[s.uid] = 'absent';
+          updateRowVisual(s.uid);
+        });
+
+        actions.appendChild(presentBtn);
+        actions.appendChild(absentBtn);
+        row.appendChild(name);
+        row.appendChild(actions);
+        container.appendChild(row);
+
+        // initial visual state: NO default selection unless saved in attendanceMap
+        const saved = attendanceMap[s.uid];
+        if (holiday) {
+          presentBtn.disabled = true; absentBtn.disabled = true;
+          presentBtn.classList.remove('active'); absentBtn.classList.remove('active');
+          presentBtn.style.opacity = '0.6'; absentBtn.style.opacity = '0.6';
+        } else {
+          presentBtn.disabled = false; absentBtn.disabled = false;
+          presentBtn.style.opacity = '1'; absentBtn.style.opacity = '1';
+          presentBtn.classList.toggle('active', saved === 'present');
+          absentBtn.classList.toggle('active', saved === 'absent');
+          // if saved is undefined: leave both unselected (no "absent" default visually)
+        }
+      });
+
+      const dateText = $id('attendanceDate').value || '(no date)';
+      $id('attendanceHint').textContent = `Date: ${dateText}. Holiday: ${$id('attendanceHoliday').checked ? 'Yes' : 'No'}. No default selected.`;
+    }
+
+    function updateRowVisual(uid) {
+      const row = $id('stu-' + uid); if (!row) return;
+      const presentBtn = row.querySelector('.present-btn'); const absentBtn = row.querySelector('.absent-btn');
+      const holiday = $id('attendanceHoliday').checked === true;
+      if (holiday) {
+        presentBtn.disabled = true; absentBtn.disabled = true;
+        presentBtn.classList.remove('active'); absentBtn.classList.remove('active');
+        presentBtn.style.opacity = '0.6'; absentBtn.style.opacity = '0.6';
+        return;
+      }
+      presentBtn.disabled = false; absentBtn.disabled = false;
+      presentBtn.style.opacity = '1'; absentBtn.style.opacity = '1';
+      presentBtn.classList.toggle('active', attendanceMap[uid] === 'present');
+      absentBtn.classList.toggle('active', attendanceMap[uid] === 'absent');
+    }
+
+    // --- REPLACED buildAndDownloadXlsx: safe sheet name and filename sanitization ---
+    function buildAndDownloadXlsx(days, dataForDates) {
+      try {
+        // helper: sanitize sheet name (Excel rules: max 31 chars, cannot contain : \ / ? * [ ] )
+        const sanitizeSheetName = (name) => {
+          if (!name) return 'Attendance';
+          // remove forbidden characters and trim
+          const cleaned = String(name).replace(/[:\\\/\?\*\[\]]/g, ' ').trim();
+          // collapse multiple spaces
+          const collapsed = cleaned.replace(/\s+/g, ' ');
+          // Excel sheet name max length 31
+          return collapsed.substring(0, 31) || 'Attendance';
+        };
+
+        // helper: sanitize filename for common filesystem restrictions
+        const sanitizeFileName = (name) => {
+          if (!name) return 'attendance';
+          // remove / \ : * ? " < > | and control chars; replace spaces with underscore
+          const cleaned = String(name).replace(/[\/\\:\*\?"<>\|\x00-\x1F]/g, '').trim();
+          return cleaned.replace(/\s+/g, '_').substring(0, 120) || 'attendance';
+        };
+
+        const aoa = [];
+        const cname = (classData && classData.name) ? classData.name.toString() : 'Class';
+        // put class name (words) on first row (keeps original behavior)
+        const words = cname.split(/\s+/);
+        aoa.push(words);
+
+        const header = [];
+        header[0] = 'Name';
+        header[1] = 'Roll';
+        for (let i = 0; i < days.length; i++) {
+          const dd = days[i];
+          header[2 + i] = `${dd.getDate()}/${dd.getMonth() + 1}`;
+        }
+        header[2 + days.length] = 'Total Present';
+        header[3 + days.length] = 'Total Absent';
+        aoa.push(header);
+
+        // ensure we only export the current students array (staff already filtered in loadStudents)
+        students.forEach(s => {
+          const row = [];
+          row[0] = s.name;
+          row[1] = s.rollNo || '';
+          let pCount = 0, aCount = 0;
+          for (let i = 0; i < days.length; i++) {
+            const dd = days[i];
+            const key = `${dd.getFullYear()}-${String(dd.getMonth() + 1).padStart(2, '0')}-${String(dd.getDate()).padStart(2, '0')}`;
+            const doc = dataForDates[key];
+            let cell = '';
+            if (!doc) { cell = 'A'; aCount++; }
+            else if (doc.holiday) { cell = 'HOLIDAY'; }
+            else {
+              const rec = doc.records || {};
+              if (rec[s.uid] === 'present') { cell = 'P'; pCount++; }
+              else { cell = 'A'; aCount++; }
+            }
+            row[2 + i] = cell;
+          }
+          row[2 + days.length] = pCount;
+          row[3 + days.length] = aCount;
+          aoa.push(row);
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        const cols = [];
+        cols[0] = { wch: 28 };
+        cols[1] = { wch: 16 };
+        for (let i = 0; i < days.length; i++) cols[2 + i] = { wch: 12 };
+        cols[2 + days.length] = { wch: 14 };
+        cols[3 + days.length] = { wch: 14 };
+        ws['!cols'] = cols;
+
+        const safeSheet = sanitizeSheetName((classData && classData.name) ? classData.name : 'Attendance');
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, safeSheet);
+
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([wbout], { type: 'application/octet-stream' });
+
+        const startDate = days[0].toISOString().slice(0, 10);
+        const endDate = days[days.length - 1].toISOString().slice(0, 10);
+
+        const safeCode = sanitizeFileName(classData && classData.code ? classData.code : (classData && classData.name ? classData.name : 'class'));
+        const fname = `${safeCode}_attendance_${startDate}_to_${endDate}.xlsx`;
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fname;
+        document.body.appendChild(a);
+
+        // trigger download
+        a.click();
+
+        // remove anchor and revoke url after short delay so download can start reliably across browsers
+        setTimeout(() => {
+          a.remove();
+          try { URL.revokeObjectURL(url); } catch (e) { /* ignore */ }
+        }, 1500);
+      } catch (err) {
+        console.error('buildAndDownloadXlsx failed', err);
+        alert('Could not build Excel file: ' + (err.message || err));
+      }
+    }
+
+    // try to load date on attach
+    (function attachInitialDateLoad() {
+      setTimeout(async () => {
+        const dateEl = $id('attendanceDate');
+        if (dateEl && dateEl.value) await loadAttendanceForDate(dateEl.value);
+      }, 800);
+    })();
+
+    function escapeHtml(s) {
+      if (!s && s !== 0) return '';
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+
+</html>

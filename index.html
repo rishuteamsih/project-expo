@@ -1,0 +1,1910 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Campus Connect – Unite Your Campus</title>
+  <link rel="icon" href="CAMPUS CONNECT.png" />
+  <style>
+    /* (your existing CSS unchanged) */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #f2f4f8;
+      padding: 20px;
+    }
+
+    header {
+      background: #18ab91;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    header img {
+      height: 70px;
+      display: block;
+      margin: 0 auto 8px;
+    }
+
+    header h1 {
+      font-size: 26px;
+      margin-bottom: 4px;
+    }
+
+    header p {
+      font-size: 15px;
+      opacity: .95;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .profile-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: #fff;
+      color: #18ab91;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, .15);
+      transition: transform .2s;
+    }
+
+    .profile-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .container {
+      position: relative;
+      width: min(900px, 95%);
+      height: 550px;
+      background: #fff;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
+      margin: auto;
+    }
+
+    .form-container {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      transition: all .6s ease-in-out;
+    }
+
+    .sign-in-container {
+      left: 0;
+      width: 50%;
+      z-index: 2;
+    }
+
+    .sign-up-container {
+      left: 0;
+      width: 50%;
+      opacity: 0;
+      z-index: 1;
+    }
+
+    form {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 0 50px;
+      text-align: center;
+    }
+
+    form h1 {
+      color: #18ab91;
+      margin-bottom: 14px;
+      font-weight: 700;
+    }
+
+    input,
+    select {
+      width: 100%;
+      max-width: 320px;
+      padding: 12px 14px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: none;
+      background: #f0f1f3;
+    }
+
+    button {
+      margin-top: 14px;
+      padding: 12px 42px;
+      border-radius: 999px;
+      border: none;
+      background: #18ab91;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .08s ease;
+    }
+
+    button:active {
+      transform: scale(.98);
+    }
+
+    button.ghost {
+      background: transparent;
+      border: 2px solid rgba(255, 255, 255, .35);
+      color: #fff;
+      padding: 10px 30px;
+    }
+
+    .overlay-container {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 50%;
+      height: 100%;
+      overflow: hidden;
+      transition: transform .6s ease-in-out;
+      z-index: 100;
+    }
+
+    .overlay {
+      position: relative;
+      left: -100%;
+      width: 200%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      transition: transform .6s ease-in-out;
+      background: linear-gradient(90deg, #20b39a 0%, #17a88a 100%);
+      color: #fff;
+    }
+
+    .overlay-panel {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 40px;
+      text-align: center;
+    }
+
+    .container.right-panel-active .sign-in-container {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+
+    .container.right-panel-active .sign-up-container {
+      transform: translateX(100%);
+      opacity: 1;
+      z-index: 5;
+    }
+
+    .container.right-panel-active .overlay-container {
+      transform: translateX(-100%);
+    }
+
+    .container.right-panel-active .overlay {
+      transform: translateX(50%);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      border-bottom: 1px solid #ccc;
+      text-align: left;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, .5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .modal-box {
+      background: #fff;
+      padding: 20px;
+      border-radius: 14px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, .15);
+    }
+
+    .modal-box h3 {
+      color: #18ab91;
+      margin-bottom: 10px;
+    }
+
+    .modal-box input,
+    .modal-box textarea,
+    .modal-box select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin: 6px 0;
+    }
+
+    .modal-box button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #18ab91;
+      color: #fff;
+    }
+
+    .notice-card {
+      background: #fff;
+      padding: 12px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, .05);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .profile-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, .5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+    }
+
+    .profile-box {
+      background: #fff;
+      padding: 25px;
+      border-radius: 14px;
+      width: 90%;
+      max-width: 380px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, .15);
+    }
+
+    .profile-box h2 {
+      color: #18ab91;
+      margin-bottom: 10px;
+    }
+
+    .profile-box input,
+    .profile-box textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin: 6px 0;
+    }
+
+    .profile-box button {
+      margin-top: 10px;
+      padding: 10px;
+      border: none;
+      background: #18ab91;
+      color: #fff;
+      border-radius: 8px;
+    }
+
+    .dash-tabs {
+      width: 100%;
+      max-width: 900px;
+      margin: 14px auto 8px;
+    }
+
+    .tabs-bar {
+      background: #198b6f;
+      color: #fff;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, .08);
+      font-weight: 700;
+    }
+
+    .tab {
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    .tab.active {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .tab a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .tab:hover {
+      opacity: .95;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown-toggle::after {
+      content: "▾";
+      margin-left: 8px;
+      font-weight: 900;
+      font-size: 12px;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 115%;
+      left: 0;
+      background: #fff;
+      color: #124e40;
+      min-width: 190px;
+      border-radius: 10px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, .15);
+      padding: 8px 0;
+      display: none;
+      z-index: 50;
+    }
+
+    .dropdown.open .dropdown-menu {
+      display: block;
+    }
+
+    .dropdown-item {
+      padding: 10px 14px;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .dropdown-item:hover {
+      background: #eef7f5;
+    }
+
+    .scroll-pane {
+      max-height: 280px;
+      overflow: auto;
+      padding-right: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-radius: 10px;
+    }
+
+    /* Cards / buttons reused by Classroom & Practice */
+    .card {
+      background: #fff;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #eee;
+      margin-bottom: 14px;
+    }
+
+    .list-item {
+      border: 1px solid #eee;
+      padding: 10px;
+      border-radius: 8px;
+      background: #fafafa;
+      margin-bottom: 8px;
+    }
+
+    .muted {
+      font-size: 12px;
+      color: #666;
+      margin-top: 6px;
+    }
+
+    .btn {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: none;
+      background: #18ab91;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn.secondary {
+      background: #fff;
+      color: #18ab91;
+      border: 1px solid #18ab91;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-top: 6px;
+    }
+
+    .card h3 {
+      color: #18ab91;
+      margin-bottom: 6px;
+    }
+
+    /* Practice list & run styling */
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .filter-bar input,
+    .filter-bar select {
+      flex: 1;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #bbb;
+    }
+
+    .question {
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #f0f0f0;
+    }
+
+    .correct {
+      background: #c8e6c9;
+    }
+
+    .wrong {
+      background: #ffcdd2;
+    }
+
+    /* ---------- Attendance UI + alert bubble ---------- */
+    .attendance-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .attendance-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #eee;
+      background: #fafafa;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .attendance-left {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .attendance-title {
+      font-weight: 700;
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+      transition: box-shadow .4s, transform .18s, opacity .2s;
+      flex: 0 0 auto;
+    }
+
+    .dot.red {
+      background: #e04747;
+      box-shadow: 0 0 8px rgba(224, 71, 71, 0.35);
+      animation: pulse-dim 2.4s infinite;
+    }
+
+    .dot.orange {
+      background: #f0932b;
+      box-shadow: 0 0 8px rgba(240, 147, 43, 0.25);
+      animation: pulse-dim 2.6s infinite;
+    }
+
+    .dot.green {
+      background: #2bb673;
+      box-shadow: 0 0 8px rgba(43, 182, 115, 0.25);
+      animation: pulse-bright 2.6s infinite;
+    }
+
+    .dot.gray {
+      background: #bdbdbd;
+      box-shadow: none;
+      animation: none;
+    }
+
+    @keyframes pulse-dim {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.03);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.12);
+        box-shadow: 0 0 14px rgba(0, 0, 0, 0.06);
+        opacity: .8;
+      }
+
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.03);
+        opacity: 1;
+      }
+    }
+
+    @keyframes pulse-bright {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 6px rgba(0, 0, 0, 0.02);
+        opacity: 0.95;
+      }
+
+      50% {
+        transform: scale(1.12);
+        box-shadow: 0 0 18px rgba(43, 182, 115, 0.32);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 6px rgba(0, 0, 0, 0.02);
+        opacity: 0.95;
+      }
+    }
+
+    .attendance-meta {
+      min-width: 160px;
+      text-align: right;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .attendance-details {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #fff;
+      border: 1px solid #eee;
+      display: none;
+    }
+
+    .attendance-row.clickable {
+      cursor: pointer;
+    }
+
+    .attendance-row .muted {
+      margin: 0;
+    }
+
+    /* alert bubble */
+    .alert-bubble {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      border-radius: 999px;
+      background: #f44336;
+      color: #fff;
+      font-weight: 800;
+      font-size: 12px;
+      box-shadow: 0 4px 10px rgba(244, 67, 54, 0.18);
+    }
+
+    .percent-label {
+      font-weight: 800;
+      min-width: 60px;
+      text-align: right;
+    }
+
+    @media (max-width:520px) {
+      .attendance-meta {
+        text-align: left;
+        margin-top: 8px;
+        justify-content: flex-start;
+      }
+
+      .attendance-left {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOGIN / SIGNUP -->
+  <div id="loginView" class="view" style="display:block;">
+    <header>
+      <img src="CAMPUS CONNECT.png" alt="Campus Connect">
+      <h1>Campus Connect</h1>
+      <p>Unite Your Campus</p>
+    </header>
+    <div class="container" id="container">
+      <div class="form-container sign-up-container">
+        <form id="signupForm">
+          <h1>Create Account</h1>
+          <input id="signupName" type="text" placeholder="Name" required />
+          <input id="signupEmail" type="email" placeholder="Email" required />
+          <input id="signupPassword" type="password" placeholder="Password" required />
+          <select id="signupRole" required>
+            <option value="" disabled selected>Select role</option>
+            <option value="student">Student</option>
+            <option value="faculty">Faculty</option>
+            <option value="hod">HOD / Admin</option>
+          </select>
+          <button type="submit">Sign Up</button>
+        </form>
+      </div>
+      <div class="form-container sign-in-container">
+        <form id="loginForm">
+          <h1>Sign In</h1>
+          <input id="loginEmail" type="email" placeholder="Email" required />
+          <input id="loginPassword" type="password" placeholder="Password" required />
+          <div style="display:flex;gap:8px;align-items:center;width:100%;max-width:320px;">
+            <button type="submit" style="flex:1;">Login</button>
+            <!-- Forgot Password button placed right of the login button -->
+            <button id="forgotPasswordBtn" type="button" class="header"
+              style="padding:10px 12px;margin-left:6px;">Forgot</button>
+          </div>
+        </form>
+      </div>
+      <div class="overlay-container">
+        <div class="overlay">
+          <div class="overlay-panel overlay-left">
+            <h1>Welcome Back!</h1>
+            <p>Login with your account</p><button class="ghost" id="signIn">Sign In</button>
+          </div>
+          <div class="overlay-panel overlay-right">
+            <h1>Hello!</h1>
+            <p>Enter your details and start your journey</p>
+            <button class="ghost" id="signUp">Sign Up</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= ADMIN / HOD DASHBOARD ========================= -->
+  <div id="facultyView" class="view">
+    <!-- HEADER changed to classroom-style header -->
+    <header>
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <img class="logo" src="CAMPUS CONNECT.png" alt="Campus Connect">
+          <div class="title-block">
+            <h1>Campus Connect</h1>
+            <p>Admin / HOD Dashboard</p>
+          </div>
+        </div>
+      </div>
+
+      <button id="profileBtn" class="profile-btn" title="Profile" fdprocessedid="dy8z02" style="
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-left: 6px;
+    border-right-width: 6px;
+    padding-right: 6px;">👤</button>
+    </header>
+
+    <nav class="dash-tabs" aria-label="Admin navigation">
+      <div class="tabs-bar">
+        <div class="tab dropdown" data-dropdown>
+          <span class="dropdown-toggle">Chat Option</span>
+          <div class="dropdown-menu" role="menu">
+            <a class="dropdown-item" href="chat.html">Global Chat</a>
+            <a class="dropdown-item" href="private.html">Private Chat</a>
+            <a class="dropdown-item" href="groups.html">Group Chat</a>
+          </div>
+        </div>
+
+        <!-- MERGED: Approvals and Total Approved into single dropdown (like Chat Option) -->
+        <div class="tab dropdown" data-dropdown>
+          <span class="dropdown-toggle">Approvals</span>
+          <div class="dropdown-menu" role="menu">
+            <div class="dropdown-item" data-admin-tab="approvals">Pending Signups</div>
+            <div class="dropdown-item" data-admin-tab="approved">Total Approved</div>
+          </div>
+        </div>
+
+        <!-- kept original Upload Docs tab -->
+        <div class="tab" data-tab="uploadDocs">Upload Docs</div>
+
+        <!-- NEW: Schedule tab linking to schedulea.html -->
+        <div class="tab"><a class="tab-link" href="schedulea.html">Schedule</a></div>
+
+        <div class="tab" data-tab="notices">Notices</div>
+        <div class="tab" id="sendNoticeTab">Send Notice</div>
+      </div>
+    </nav>
+
+    <main>
+      <!-- DEFAULT: Approvals visible -->
+      <section id="sec-approvals" style="display:block; margin-top:10px;">
+        <h3>Pending Signups</h3>
+        <table id="pendingTable">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <!-- Upload docs section (hidden by default, shown when tab clicked) -->
+      <section id="sec-uploadDocs" style="display:none; margin-top:10px;">
+        <h3>Upload Documents (Admin)</h3>
+        <div class="card">
+          <p class="muted">Upload results, admit-cards or other docs on behalf of students by roll no.</p>
+          <label>Student Roll No</label>
+          <input id="docRollNoInline" type="text" placeholder="Roll No (e.g. 21CS1001)" />
+          <label style="margin-top:8px;">Document Type</label>
+          <select id="docTypeInline">
+            <option value="result">Result</option>
+            <option value="admit_card">Admit Card</option>
+            <option value="other">Other</option>
+          </select>
+          <label style="margin-top:8px;">File</label>
+          <input id="docFileInline" type="file" accept=".pdf,image/*" />
+          <div style="margin-top:10px; display:flex; gap:8px;">
+            <button id="uploadDocBtnInline" class="btn">Upload</button>
+            <button id="resetUploadInline" class="btn secondary">Reset</button>
+          </div>
+          <div id="uploadStatusInline" class="muted" style="margin-top:8px;"></div>
+        </div>
+      </section>
+
+      <section id="sec-approved" style="display:none; margin-top:10px;">
+        <h3>All Approved Users</h3>
+        <table id="approvedTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <section id="sec-notices" style="display:none; margin-top:10px;">
+        <h3>📜 Posted Notices</h3>
+        <div id="sentNotices" class="scroll-pane" style="margin-top:10px;"></div>
+      </section>
+
+      <button id="logoutBtnFaculty" class="logout-btn">Logout</button>
+    </main>
+  </div>
+
+  <!-- ========================= STUDENT DASHBOARD ========================= -->
+  <div id="studentView" class="view">
+    <!-- HEADER changed to classroom-style header -->
+    <header>
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <img class="logo" src="CAMPUS CONNECT.png" alt="Campus Connect">
+          <div class="title-block">
+            <h1>Campus Connect</h1>
+            <p>Student Dashboard</p>
+          </div>
+        </div>
+      </div>
+
+      <button id="profileBtn2" class="profile-btn" title="Profile" fdprocessedid="dy8z02" style="
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-left: 6px;
+    border-right-width: 6px;
+    padding-right: 6px;">👤</button>
+    </header>
+
+    <nav class="dash-tabs" aria-label="Student navigation">
+      <div class="tabs-bar">
+        <div class="tab dropdown" data-dropdown>
+          <span class="dropdown-toggle">Chat Option</span>
+          <div class="dropdown-menu" role="menu">
+            <a class="dropdown-item" href="chat.html">Global Chat</a>
+            <a class="dropdown-item" href="private.html">Private Chat</a>
+            <a class="dropdown-item" href="groups.html">Group Chat</a>
+          </div>
+        </div>
+
+        <div class="tab" data-student-tab="notices">Notices</div>
+        <div class="tab"><a href="schedules.html">Schedule</a></div>
+        <div class="tab" data-student-tab="classroom">Class Room</div>
+
+        <!-- added My Docs tab next to classroom as requested -->
+        <div class="tab" data-student-tab="mydocs">My Documents</div>
+
+        <div class="tab dropdown" data-dropdown>
+          <span class="dropdown-toggle">Test and Result</span>
+          <div class="dropdown-menu" role="menu">
+            <a class="dropdown-item" href="student.html">Test</a>
+            <a class="dropdown-item" href="result.html">Result</a>
+            <!-- Practice merged into this dropdown -->
+            <a class="dropdown-item" href="practice.html">Practice</a>
+          </div>
+        </div>
+        <!-- REPLACED old Practice tab with Attendance tab -->
+        <div class="tab" data-student-tab="attendance">Attendance</div>
+      </div>
+    </nav>
+
+    <main>
+      <!-- DEFAULT: Student Notices visible -->
+      <section id="sec-student-notices" style="display:block;">
+        <h3>📢 Notices</h3>
+        <div id="studentNotices" class="scroll-pane" style="margin-top:10px;"></div>
+      </section>
+
+      <!-- Embedded Classroom -->
+      <section id="studentClassroom" style="display:none;">
+        <div class="card">
+          <center>
+            <h3>🔗 Join a Class</h3>
+          </center>
+          <form id="joinForm" style="display:flex;gap:8px;align-items:center;max-width:6000px;">
+            <input id="joinCode" type="text" placeholder="Enter Class Code (e.g. CC-ABC123)" required>
+            <button class="btn" type="submit">Join</button>
+          </form>
+          <div id="myClasses" style="margin-top:12px;"></div>
+          <div class="muted" id="studentClassUserInfo" style="margin-top:8px;"></div>
+        </div>
+      </section>
+
+      <!-- Student "My Documents" panel (hidden by default) -->
+      <section id="sec-mydocs" style="display:none; margin-top:10px;">
+        <h3>My Documents</h3>
+        <div class="card">
+          <p class="muted">Enter your login password to fetch documents linked to your roll number.</p>
+          <label>Login Password</label>
+          <input id="mydocsPassword" type="password" placeholder="Enter your login password" />
+          <div style="margin-top:10px; display:flex; gap:8px;">
+            <button id="mydocsFetchBtn" class="btn">Fetch My Docs</button>
+            <button id="mydocsResetBtn" class="btn secondary">Reset</button>
+          </div>
+          <div id="myDocsList" style="margin-top:12px;"></div>
+        </div>
+      </section>
+
+      <!-- NEW Attendance Section (replaces 'Practice' tab) -->
+      <section id="sec-attendance" style="display:none; margin-top:10px;">
+        <h3>📊 My Attendance</h3>
+        <p class="muted">Click a class to view its working days and your present days. Colored dot indicates attendance:
+          <strong>red</strong>&lt;70% <strong>orange</strong>70–80% <strong>green</strong>&gt;80%.
+        </p>
+        <div id="attendanceArea" class="attendance-list">
+          <div class="muted">Loading attendance data…</div>
+        </div>
+      </section>
+
+      <!-- NEW: Practice (hidden, will be opened via dropdown) -->
+      <section id="studentPractice" style="display:none;">
+        <div class="card">
+          <h3>🧠 Practice Mode – Published Tests</h3>
+          <div class="filter-bar">
+            <input id="practiceSearch" type="text" placeholder="🔍 Search test by title or code..." />
+            <select id="practiceFilter">
+              <option value="all">All</option>
+              <option value="public">Public Only</option>
+              <option value="private">Private Only</option>
+            </select>
+            <button class="btn secondary" id="practiceRefresh">Refresh</button>
+          </div>
+          <div id="practiceList"></div>
+        </div>
+
+        <div class="card" id="practiceRun" style="display:none;">
+          <h3 id="practiceTestTitle"></h3>
+          <p id="practiceTestDesc" class="muted"></p>
+          <div id="practiceQuestionArea"></div>
+          <div style="display:flex; gap:8px; margin-top:10px;">
+            <button class="btn" id="practiceSubmit">Finish Practice</button>
+            <button class="btn secondary" id="practiceBack">Back to List</button>
+          </div>
+          <div id="practiceScoreArea" style="margin-top:10px;"></div>
+        </div>
+      </section>
+
+      <button id="logoutBtnStudent" class="logout-btn">Logout</button>
+    </main>
+  </div>
+
+  <!-- Notice Modal -->
+  <div id="noticeModal" class="modal">
+    <div class="modal-box">
+      <h3>Send Notice</h3>
+      <input type="text" id="noticeTitle" placeholder="Notice title" required />
+      <textarea id="noticeMsg" rows="3" placeholder="Notice message"></textarea>
+      <select id="noticeTarget">
+        <option value="both">Students & Faculty</option>
+        <option value="students">Students Only</option>
+        <option value="faculty">Faculty Only</option>
+      </select>
+      <input type="file" id="noticeFile" accept=".pdf,image/*" />
+      <button id="sendNoticeBtn">Send Notice</button>
+      <button id="cancelNoticeBtn">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div id="profileModal" class="profile-modal">
+    <div class="profile-box">
+      <h2>Your Profile</h2>
+      <label>Name</label><input type="text" id="profName" />
+      <label>Email</label><input type="email" id="profEmail" disabled />
+      <label>Role</label><input type="text" id="profRole" disabled />
+      <label>Bio</label><textarea id="profBio" rows="3"></textarea>
+      <label>Profile Image</label><input type="file" id="profImage" accept="image/*" />
+      <div style="display:flex;gap:8px;">
+        <button id="saveProfile">Save</button>
+        <button id="closeProfile" style="background:#ccc;color:#000;margin-left:8px;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import {
+      auth, db, storage,
+      signOut, doc, getDoc, setDoc, updateDoc, deleteDoc,
+      collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp,
+      createUserWithEmailAndPassword, signInWithEmailAndPassword,
+      sRef, uploadBytesResumable, getDownloadURL,
+      // classroom helpers
+      requireAuth, getDocs,
+      sendPasswordResetEmail
+    } from "./server.js";
+    import { onAuthStateChanged } from "./server.js";
+
+    /* ---------- Helpers ---------- */
+    function showView(id) {
+      document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+    }
+    function setupDropdowns() {
+      const dropdowns = document.querySelectorAll('[data-dropdown]');
+      dropdowns.forEach(dd => {
+        const toggle = dd.querySelector('.dropdown-toggle');
+        toggle.addEventListener('click', (e) => { e.stopPropagation(); dd.classList.toggle('open'); });
+      });
+      document.addEventListener('click', () => {
+        document.querySelectorAll('.dropdown.open').forEach(d => d.classList.remove('open'));
+      });
+    }
+
+    /* ---------- Auth: signup/login ---------- */
+    document.getElementById('signupForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      try {
+        const name = signupName.value.trim();
+        const email = signupEmail.value.trim();
+        const pass = signupPassword.value;
+        const role = signupRole.value;
+        if (!name || !email || !pass || !role) return alert('Fill all signup fields');
+
+        // create auth user
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+
+        // extract rollNo from email (everything before @)
+        const rollNo = (email.split('@')[0] || '').toLowerCase();
+
+        // write user doc with rollNo
+        await setDoc(doc(db, 'users', cred.user.uid), {
+          name,
+          email,
+          role,
+          approved: false,
+          uid: cred.user.uid,
+          rollNo,
+          createdAt: serverTimestamp()
+        });
+
+        alert('✅ Account created! Awaiting admin approval.');
+        // sign out so admin approval flow stays same
+        await signOut(auth);
+        signupForm.reset();
+      } catch (err) { console.error(err); alert("Signup failed: " + (err.message || err.code)); }
+    });
+    const _c = document.getElementById('container');
+    signUp.onclick = () => _c.classList.add('right-panel-active');
+    signIn.onclick = () => _c.classList.remove('right-panel-active');
+    document.getElementById('loginForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      try {
+        const email = loginEmail.value.trim();
+        const pass = loginPassword.value;
+        await signInWithEmailAndPassword(auth, email, pass);
+      } catch (err) { console.error(err); alert("Login failed: " + (err.message || err.code)); }
+    });
+
+    // Forgot password button (to the right of the login button)
+    document.getElementById('forgotPasswordBtn')?.addEventListener('click', async () => {
+      const email = loginEmail.value?.trim();
+      if (!email) return alert('Enter your email in the login field first.');
+      try {
+        await sendPasswordResetEmail(auth, email);
+        alert('Password reset email sent — check your inbox.');
+      } catch (err) {
+        console.error('reset failed', err);
+        alert('Failed to send reset email: ' + (err.message || err));
+      }
+    });
+
+    /* ---------- Auth state ---------- */
+    onAuthStateChanged(auth, async user => {
+      try {
+        if (!user) return showView('loginView');
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (!snap.exists()) return showView('loginView');
+        const p = snap.data();
+        if (!p.approved) { alert("Waiting for approval by admin"); await signOut(auth); return; }
+
+        if (p.role === 'hod' || p.role === 'admin') {
+          showView('facultyView');
+          setupDropdowns();
+          setupAdminTabsDefault();
+          preloadAdminData();
+        } else if (p.role === 'faculty') {
+          window.location.href = "faculty_dashboard.html";
+        } else {
+          showView('studentView');
+          setupDropdowns();
+          setupStudentTabsDefault();
+          initStudentNotices();
+          initClassroomFeature();
+        }
+      } catch (e) { console.error(e); showView('loginView'); }
+    });
+
+    /* ---------- Admin tabs (default Approvals) ---------- */
+    function setupAdminTabsDefault() {
+      const sections = {
+        approvals: document.getElementById('sec-approvals'),
+        uploadDocs: document.getElementById('sec-uploadDocs'),
+        approved: document.getElementById('sec-approved'),
+        notices: document.getElementById('sec-notices')
+      };
+      // default
+      sections.approvals.style.display = 'block';
+      sections.uploadDocs.style.display = 'none';
+      sections.approved.style.display = 'none';
+      sections.notices.style.display = 'none';
+
+      // existing simple tab clicks (for non-dropdown tabs)
+      document.querySelectorAll('#facultyView .tabs-bar > .tab').forEach(tab => {
+        // skip dropdown parents here (they will be handled separately)
+        if (tab.classList.contains('dropdown')) return;
+        tab.addEventListener('click', () => {
+          Object.values(sections).forEach(s => s.style.display = 'none');
+          // clear active states first
+          document.querySelectorAll('#facultyView .tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+
+          const key = tab.getAttribute('data-tab');
+          if (key && sections[key]) sections[key].style.display = 'block';
+        });
+      });
+
+      // handle dropdown menu items for the Approvals dropdown
+      document.querySelectorAll('#facultyView .dropdown-menu .dropdown-item[data-admin-tab]').forEach(item => {
+        item.addEventListener('click', (e) => {
+          const key = e.currentTarget.getAttribute('data-admin-tab'); // 'approvals' or 'approved'
+          if (!key) return;
+          // hide all
+          Object.values(sections).forEach(s => s.style.display = 'none');
+          // remove active from all tabs
+          document.querySelectorAll('#facultyView .tab').forEach(t => t.classList.remove('active'));
+          // mark the dropdown parent active for visual feedback
+          const parentDropdown = e.currentTarget.closest('.dropdown');
+          if (parentDropdown) parentDropdown.classList.add('active');
+
+          // show the requested section
+          if (sections[key]) sections[key].style.display = 'block';
+          // close dropdown
+          const dropdownParent = e.currentTarget.closest('.dropdown');
+          if (dropdownParent) dropdownParent.classList.remove('open');
+        });
+      });
+
+      // wire the Send Notice tab separately (as before)
+      document.getElementById('sendNoticeTab').addEventListener('click', () => {
+        document.getElementById('noticeModal').style.display = 'flex';
+      });
+
+      // ensure first tab shows active (we want pending signups visible by default)
+      const first = document.querySelector('#facultyView .dropdown-menu .dropdown-item[data-admin-tab="approvals"]');
+      if (first) {
+        // visually mark its parent dropdown active
+        const parent = first.closest('.dropdown');
+        if (parent) parent.classList.add('active');
+      } else {
+        const fallback = document.querySelector('#facultyView .tab[data-tab="approvals"]');
+        if (fallback) fallback.classList.add('active');
+      }
+    }
+
+    /* ---------- Admin data listeners ---------- */
+    function preloadAdminData() {
+      // Pending users
+      const bodyPending = document.querySelector("#pendingTable tbody");
+      const qPending = query(collection(db, "users"), where("approved", "==", false));
+      onSnapshot(qPending, snap => {
+        bodyPending.innerHTML = "";
+        snap.forEach(d => {
+          const u = d.data();
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${u.email}</td><td>${u.role}</td><td>${u.approved ? "Approved" : "Pending"}</td>
+            <td style="display:flex;gap:8px;">
+              <button data-approve="${u.uid}">Approve</button>
+              <button data-reject="${u.uid}" style="background:#e74c3c;color:#fff;border-radius:6px;">Reject</button>
+            </td>`;
+          bodyPending.appendChild(tr);
+        });
+        bodyPending.querySelectorAll("[data-approve]").forEach(btn => {
+          btn.onclick = async e => { await updateDoc(doc(db, "users", e.target.dataset.approve), { approved: true }); alert("✅ User approved"); };
+        });
+        bodyPending.querySelectorAll("[data-reject]").forEach(btn => {
+          btn.onclick = async e => { await updateDoc(doc(db, "users", e.target.dataset.reject), { approved: false }); alert("🚫 Request rejected"); };
+        });
+      });
+
+      // Approved users
+      const bodyApproved = document.querySelector("#approvedTable tbody");
+      const qApproved = query(collection(db, "users"), where("approved", "==", true));
+      onSnapshot(qApproved, snap => {
+        bodyApproved.innerHTML = "";
+        snap.forEach(d => {
+          const u = d.data();
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${u.name || "-"}</td><td>${u.email}</td><td>${u.role}</td>
+            <td><button data-unapprove="${u.uid}" style="background:#e74c3c;color:#fff;border-radius:6px;">Reject</button></td>`;
+          bodyApproved.appendChild(tr);
+        });
+        bodyApproved.querySelectorAll("[data-unapprove]").forEach(btn => {
+          btn.onclick = async e => { await updateDoc(doc(db, "users", e.target.dataset.unapprove), { approved: false }); alert("❗ Approval revoked"); };
+        });
+      });
+
+      // Notices (ALL notices like student feed) — now with Delete button for admin
+      const list = document.getElementById("sentNotices");
+      const qNotices = query(collection(db, "notices"), orderBy("createdAt", "desc"));
+      onSnapshot(qNotices, snap => {
+        list.innerHTML = "";
+        snap.forEach(d => {
+          const n = d.data();
+          const id = d.id;
+          const div = document.createElement("div");
+          div.className = "notice-card";
+          // left part: content
+          const content = document.createElement('div');
+          content.style.flex = '1';
+          content.innerHTML = `
+            <strong>${n.title}</strong>
+            <p style="margin:6px 0 0 0;">${n.message}</p>
+            ${n.fileURL ? `<div style="margin-top:6px;"><a href="${n.fileURL}" target="_blank" style="color:#18ab91;">📎 ${n.fileName}</a></div>` : ""}
+            <div style="font-size:12px;color:#777;margin-top:6px;">
+              ${n.createdAt?.toDate?.()?.toLocaleString?.() || ""}${n.target ? ` • ${n.target}` : ""}
+            </div>`;
+          // right part: actions
+          const actions = document.createElement('div');
+          actions.style.display = 'flex';
+          actions.style.flexDirection = 'column';
+          actions.style.gap = '8px';
+          actions.style.marginLeft = '12px';
+          // Delete button
+          const delBtn = document.createElement('button');
+          delBtn.textContent = 'Delete';
+          delBtn.style.background = '#e74c3c';
+          delBtn.style.color = '#fff';
+          delBtn.style.border = 'none';
+          delBtn.style.padding = '8px 10px';
+          delBtn.style.borderRadius = '8px';
+          delBtn.style.cursor = 'pointer';
+          delBtn.addEventListener('click', async () => {
+            if (!confirm('Delete this notice? This cannot be undone.')) return;
+            try {
+              await deleteDoc(doc(db, 'notices', id));
+              alert('Notice deleted');
+            } catch (err) {
+              console.error('delete notice failed', err);
+              alert('Failed to delete notice: ' + (err.message || err));
+            }
+          });
+          actions.appendChild(delBtn);
+
+          div.appendChild(content);
+          div.appendChild(actions);
+
+          list.appendChild(div);
+        });
+      });
+    }
+
+    /* ---------- Student tabs & switching ---------- */
+    let practiceLoadedOnce = false;
+    function setupStudentTabsDefault() {
+      const sections = {
+        notices: document.getElementById('sec-student-notices'),
+        classroom: document.getElementById('studentClassroom'),
+        mydocs: document.getElementById('sec-mydocs'),
+        attendance: document.getElementById('sec-attendance'),
+        practice: document.getElementById('studentPractice')
+      };
+
+      // default
+      sections.notices.style.display = 'block';
+      sections.classroom.style.display = 'none';
+      sections.mydocs.style.display = 'none';
+      sections.attendance.style.display = 'none';
+      sections.practice.style.display = 'none';
+
+      document.querySelectorAll('#studentView .tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          Object.values(sections).forEach(s => s.style.display = 'none');
+          document.querySelectorAll('#studentView .tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+
+          const key = tab.getAttribute('data-student-tab');
+          if (key && sections[key]) {
+            sections[key].style.display = 'block';
+            if (key === 'attendance') {
+              // init attendance when the attendance tab is opened
+              initAttendanceForStudent();
+            }
+          }
+        });
+      });
+
+      // practice link in dropdown
+      document.getElementById('practiceFromDropdown')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        // show practice section (not a top-level tab)
+        Object.values(sections).forEach(s => s.style.display = 'none');
+        sections.practice.style.display = 'block';
+        // set active state on dropdown visual: remove active from other tabs
+        document.querySelectorAll('#studentView .tab').forEach(t => t.classList.remove('active'));
+        // no tab to mark active; optionally mark 'Test and Result' dropdown visually:
+        const tr = Array.from(document.querySelectorAll('#studentView .tab')).find(t => t.querySelector('.dropdown-toggle')?.textContent?.includes('Test and Result'));
+        if (tr) tr.classList.add('active');
+        if (!practiceLoadedOnce) {
+          practiceLoadedOnce = true;
+          loadPracticeTests();
+        }
+      });
+
+      // set default active
+      const first = document.querySelector('#studentView .tab[data-student-tab="notices"]');
+      if (first) first.classList.add('active');
+    }
+
+    /* ---------- Student Notices feed ---------- */
+    function initStudentNotices() {
+      const studentNotices = document.getElementById("studentNotices");
+      const q = query(collection(db, "notices"), orderBy("createdAt", "desc"));
+      onSnapshot(q, snap => {
+        studentNotices.innerHTML = "";
+        snap.forEach(d => {
+          const n = d.data();
+          if (n.target === "students" || n.target === "both") {
+            const div = document.createElement("div");
+            div.className = "notice-card";
+            div.innerHTML = `
+              <div style="flex:1">
+                <strong>${n.title}</strong>
+                <p style="margin:6px 0 0 0;">${n.message}</p>
+                ${n.fileURL ? `<div style="margin-top:6px;"><a href="${n.fileURL}" target="_blank" style="color:#18ab91;">📎 ${n.fileName}</a></div>` : ""}
+                <div style="font-size:12px;color:#777;margin-top:6px;">${n.createdAt?.toDate?.()?.toLocaleString?.() || ""}</div>
+              </div>`;
+            studentNotices.appendChild(div);
+          }
+        });
+      });
+    }
+
+    /* ---------- Classroom (embedded) ---------- */
+    let me = null;
+    async function initClassroomFeature() {
+      requireAuth(async (u) => {
+        me = u;
+        const info = document.getElementById('studentClassUserInfo');
+        if (info) info.textContent = `Signed in as ${me.email}`;
+        loadMyClasses();
+      });
+
+      const jf = document.getElementById('joinForm');
+      jf.addEventListener("submit", async e => {
+        e.preventDefault();
+        const code = document.getElementById('joinCode').value.trim();
+        if (!code) return;
+        const q = query(collection(db, "classes"), where("code", "==", code));
+        const snap = await getDocs(q);
+        if (snap.empty) return alert("Class not found.");
+        const cDoc = snap.docs[0];
+        const classId = cDoc.id;
+        const cData = cDoc.data();
+        const members = cData.members || [];
+        if (!members.includes(me.uid)) {
+          await updateDoc(doc(db, "classes", classId), { members: [...members, me.uid] });
+        }
+        jf.reset();
+        loadMyClasses();
+      });
+
+      function loadMyClasses() {
+        const q2 = query(collection(db, "classes"), where("members", "array-contains", me.uid));
+        onSnapshot(q2, snap => {
+          const my = document.getElementById('myClasses');
+          my.innerHTML = "";
+          if (snap.empty) { my.innerHTML = "<div class='muted'>No classes joined yet.</div>"; return; }
+          snap.forEach(docSnap => {
+            const c = docSnap.data();
+            const id = docSnap.id;
+            const div = document.createElement("div");
+            div.className = "list-item";
+            div.innerHTML = `<strong>${c.name}</strong>
+              <div class="muted">Code: <span style="color:#18ab91">${c.code}</span></div>
+              <div style="margin-top:8px;">
+                <button class="btn secondary" onclick="window.location='classes.html?id=${id}'">Open Class</button>
+              </div>`;
+            my.appendChild(div);
+          });
+        });
+      }
+    }
+
+    /* ---------- Practice (merged) ---------- */
+    const practiceList = document.getElementById("practiceList");
+    const practiceRun = document.getElementById("practiceRun");
+    const practiceSearch = document.getElementById("practiceSearch");
+    const practiceFilter = document.getElementById("practiceFilter");
+    const practiceRefresh = document.getElementById("practiceRefresh");
+    const practiceSubmit = document.getElementById("practiceSubmit");
+    const practiceBack = document.getElementById("practiceBack");
+    const practiceTitle = document.getElementById("practiceTestTitle");
+    const practiceDesc = document.getElementById("practiceTestDesc");
+    const practiceQArea = document.getElementById("practiceQuestionArea");
+    const practiceScore = document.getElementById("practiceScoreArea");
+
+    let practiceCache = [];
+    let currentPracticeTest = null;
+
+    async function loadPracticeTests() {
+      const q = query(collection(db, "tests"), where("resultsPublished", "==", true));
+      const snap = await getDocs(q);
+      practiceCache = snap.docs.map(d => ({ id: d.id, data: d.data() }));
+      renderPracticeList();
+    }
+
+    function renderPracticeList() {
+      practiceList.innerHTML = "";
+      const mode = (practiceFilter.value || "all").toLowerCase();
+      const term = (practiceSearch.value || "").toLowerCase();
+
+      practiceCache.forEach(({ id, data: t }) => {
+        const acc = (t.accessMode || "private").toLowerCase();
+        if (mode !== "all" && acc !== mode) return;
+
+        const title = (t.title || "").toLowerCase();
+        if (term && !title.includes(term) && !id.toLowerCase().includes(term)) return;
+
+        const totalMarks = (t.questions || []).reduce((sum, q) => sum + (Number(q.marks) || 0), 0);
+
+        const div = document.createElement("div");
+        div.className = "list-item";
+        div.innerHTML = `
+          <strong>${t.title || "(Untitled Test)"}</strong>
+          <div class="muted">Code: ${id} • Access: ${acc} • Questions: ${t.questions?.length || 0} • Marks: ${totalMarks}</div>
+          <div style="margin-top:8px;">
+            <button class="btn secondary" data-open="${id}">🧩 Practice Now</button>
+          </div>`;
+        practiceList.appendChild(div);
+      });
+
+      practiceList.querySelectorAll("[data-open]").forEach(btn => {
+        btn.onclick = () => startPractice(btn.getAttribute("data-open"));
+      });
+    }
+
+    async function startPractice(id) {
+      const tDoc = await getDoc(doc(db, "tests", id));
+      if (!tDoc.exists()) return alert("Test not found");
+      const t = tDoc.data();
+      currentPracticeTest = { id, ...t };
+
+      practiceRun.style.display = "block";
+      practiceTitle.textContent = t.title || "(Untitled Test)";
+      practiceDesc.textContent = t.description || "";
+      practiceQArea.innerHTML = "";
+      practiceScore.innerHTML = "";
+
+      (t.questions || []).forEach((q, i) => {
+        const marks = Number(q.marks || 1);
+        const container = document.createElement("div");
+        container.className = "question";
+        container.innerHTML = `<strong>Q${i + 1} (${marks} marks):</strong> ${q.text || ""}<br>`;
+        if ((q.type || "mcq") === "mcq" && Array.isArray(q.options)) {
+          q.options.forEach(opt => {
+            container.innerHTML += `<label><input type="radio" name="pq${i}" value="${opt}"> ${opt}</label><br>`;
+          });
+        } else {
+          container.innerHTML += `<input type="text" name="pq${i}" placeholder="Your answer" />`;
+        }
+        practiceQArea.appendChild(container);
+      });
+
+      practiceRun.scrollIntoView({ behavior: "smooth" });
+    }
+
+    function submitPractice() {
+      if (!currentPracticeTest) return;
+      const qList = currentPracticeTest.questions || [];
+      const blocks = practiceQArea.querySelectorAll(".question");
+      let score = 0;
+
+      qList.forEach((q, i) => {
+        const el = blocks[i];
+        const marks = Number(q.marks || 1);
+        let val = "";
+        if ((q.type || "mcq") === "mcq") {
+          const sel = document.querySelector(`input[name="pq${i}"]:checked`);
+          val = sel ? (sel.value || "").trim() : "";
+        } else {
+          const inp = document.querySelector(`input[name="pq${i}"]`);
+          val = inp ? (inp.value || "").trim() : "";
+        }
+
+        const correct = (q.answer || "").toLowerCase().trim();
+        const given = (val || "").toLowerCase().trim();
+
+        if (correct && given && correct === given) {
+          score += marks;
+          el.classList.add("correct");
+        } else {
+          el.classList.add("wrong");
+          el.innerHTML += `<br><em>Correct answer:</em> ${q.answer || "—"}`;
+        }
+      });
+
+      const total = qList.reduce((s, q) => s + (Number(q.marks) || 1), 0);
+      practiceScore.innerHTML = `<h4>✅ Practice Complete!</h4><div class="muted">Your Score: <strong>${score} / ${total}</strong></div>`;
+      practiceScore.scrollIntoView({ behavior: "smooth" });
+    }
+
+    function backToPracticeList() {
+      practiceRun.style.display = "none";
+      currentPracticeTest = null;
+      document.getElementById('studentPractice').scrollIntoView({ behavior: "smooth" });
+    }
+
+    practiceSearch?.addEventListener('input', renderPracticeList);
+    practiceFilter?.addEventListener('change', renderPracticeList);
+    practiceRefresh?.addEventListener('click', loadPracticeTests);
+    practiceSubmit?.addEventListener('click', submitPractice);
+    practiceBack?.addEventListener('click', backToPracticeList);
+
+    /* ---------- Notice modal actions ---------- */
+    const noticeModal = document.getElementById("noticeModal");
+    document.getElementById("sendNoticeBtn")?.addEventListener("click", async () => {
+      try {
+        const title = noticeTitle.value.trim();
+        const message = noticeMsg.value.trim();
+        const target = noticeTarget.value;
+        const file = noticeFile.files[0];
+        if (!title || !message) return alert("Fill all fields");
+        let fileURL = "", fileName = "";
+        if (file) {
+          if (!file.type.includes("pdf") && !file.type.includes("image")) return alert("Only PDF or Images allowed");
+          const ref = sRef(storage, "notices/" + Date.now() + "_" + file.name);
+          await uploadBytesResumable(ref, file);
+          fileURL = await getDownloadURL(ref);
+          fileName = file.name;
+        }
+        await addDoc(collection(db, "notices"), { title, message, target, fileURL, fileName, sender: auth.currentUser.email, createdAt: serverTimestamp() });
+        alert("✅ Notice sent successfully!");
+        noticeModal.style.display = "none";
+      } catch (err) { console.error(err); alert("Notice failed: " + err.message); }
+    });
+    document.getElementById("cancelNoticeBtn")?.addEventListener("click", () => noticeModal.style.display = "none");
+
+    /* ---------- Logout ---------- */
+    document.getElementById("logoutBtnFaculty")?.addEventListener("click", async () => { await signOut(auth); location.reload(); });
+    document.getElementById("logoutBtnStudent")?.addEventListener("click", async () => { await signOut(auth); location.reload(); });
+
+    /* ---------- Profile modal (shared) ---------- */
+    const profileModal = document.getElementById("profileModal");
+    const profileBtns = [document.getElementById("profileBtn"), document.getElementById("profileBtn2")];
+    const closeProfile = document.getElementById("closeProfile");
+    const profName = document.getElementById("profName");
+    const profEmail = document.getElementById("profEmail");
+    const profRole = document.getElementById("profRole");
+    const profBio = document.getElementById("profBio");
+    const profImage = document.getElementById("profImage");
+    const saveProfileBtn = document.getElementById("saveProfile");
+
+    profileBtns.forEach(btn => {
+      if (!btn) return;
+      btn.addEventListener("click", async () => {
+        try {
+          if (!auth.currentUser) return alert("Not logged in");
+          const snap = await getDoc(doc(db, "users", auth.currentUser.uid));
+          const p = snap.exists() ? snap.data() : {};
+          profName.value = p.name || "";
+          profEmail.value = p.email || auth.currentUser.email || "";
+          profRole.value = p.role || "";
+          profBio.value = p.bio || "";
+          profImage.value = "";
+          profileModal.style.display = "flex";
+        } catch (err) {
+          console.error("Profile load error:", err);
+          alert("Failed to load profile");
+        }
+      });
+    });
+
+    closeProfile?.addEventListener("click", () => profileModal.style.display = "none");
+
+    saveProfileBtn?.addEventListener("click", async () => {
+      try {
+        if (!auth.currentUser) return alert("Not logged in");
+        const uid = auth.currentUser.uid;
+        const name = profName.value.trim();
+        const bio = profBio.value.trim();
+        let photoURL = null;
+        const file = profImage.files[0];
+        if (file) {
+          const ref = sRef(storage, "profiles/" + uid + "_" + file.name);
+          const uploadTask = await uploadBytesResumable(ref, file);
+          photoURL = await getDownloadURL(uploadTask.ref);
+        }
+        const updatePayload = { name, bio, updatedAt: new Date() };
+        if (photoURL) updatePayload.photoURL = photoURL;
+        await updateDoc(doc(db, "users", uid), updatePayload);
+        alert("✅ Profile updated!");
+        profileModal.style.display = "none";
+      } catch (err) {
+        console.error("Profile save error:", err);
+        alert("Failed to save profile: " + (err.message || err));
+      }
+    });
+
+    /* ---------- NEW: Inline admin upload (tab) ---------- */
+    const uploadDocBtnInline = document.getElementById('uploadDocBtnInline');
+    const resetUploadInline = document.getElementById('resetUploadInline');
+    const uploadStatusInline = document.getElementById('uploadStatusInline');
+
+    uploadDocBtnInline?.addEventListener('click', async () => {
+      try {
+        const roll = (document.getElementById('docRollNoInline').value || '').trim();
+        const type = document.getElementById('docTypeInline').value;
+        const fileEl = document.getElementById('docFileInline');
+        const file = fileEl.files[0];
+        if (!roll) return alert('Provide student roll number');
+        if (!file) return alert('Choose a file to upload');
+        uploadStatusInline.textContent = 'Uploading...';
+
+        const path = `documents/${roll}/${Date.now()}_${file.name}`;
+        const ref = sRef(storage, path);
+        const uploadTask = await uploadBytesResumable(ref, file);
+        const url = await getDownloadURL(uploadTask.ref);
+
+        await addDoc(collection(db, 'documents'), {
+          rollNo: roll,
+          docType: type,
+          fileName: file.name,
+          filePath: path,
+          fileURL: url,
+          uploadedBy: auth.currentUser?.uid || null,
+          uploadedByEmail: auth.currentUser?.email || null,
+          createdAt: serverTimestamp()
+        });
+
+        uploadStatusInline.textContent = 'Upload complete ✅';
+        alert('Document uploaded successfully!');
+        fileEl.value = '';
+        document.getElementById('docRollNoInline').value = '';
+      } catch (err) {
+        console.error('upload doc failed', err);
+        uploadStatusInline.textContent = 'Upload failed';
+        alert('Upload failed: ' + (err.message || err));
+      }
+    });
+
+    resetUploadInline?.addEventListener('click', () => {
+      document.getElementById('docFileInline').value = '';
+      document.getElementById('docRollNoInline').value = '';
+      uploadStatusInline.textContent = '';
+    });
+
+    /* ---------- NEW: Student My Documents fetch (uses login password verification) ---------- */
+    const mydocsFetchBtn = document.getElementById('mydocsFetchBtn');
+    const mydocsResetBtn = document.getElementById('mydocsResetBtn');
+    const myDocsList = document.getElementById('myDocsList');
+
+    mydocsFetchBtn?.addEventListener('click', async () => {
+      try {
+        if (!auth.currentUser) return alert('Not signed in');
+        const pwd = (document.getElementById('mydocsPassword').value || '').trim();
+        if (!pwd) return alert('Enter your login password for verification');
+
+        const email = auth.currentUser.email;
+        try {
+          await signInWithEmailAndPassword(auth, email, pwd);
+        } catch (err) {
+          console.error('password verify failed', err);
+          return alert('Password incorrect');
+        }
+
+        const usrSnap = await getDoc(doc(db, 'users', auth.currentUser.uid));
+        if (!usrSnap.exists()) return alert('User record not found');
+        const usr = usrSnap.data();
+        const roll = usr.rollNo;
+        if (!roll) return alert('Roll number not set for your account. Contact admin.');
+
+        // fetch documents for this roll
+        const qDocs = query(collection(db, 'documents'), where('rollNo', '==', roll), orderBy('createdAt', 'desc'));
+        const docsSnap = await getDocs(qDocs);
+        myDocsList.innerHTML = '';
+        if (docsSnap.empty) return myDocsList.innerHTML = '<div class="muted">No documents available.</div>';
+
+        docsSnap.forEach(d => {
+          const data = d.data();
+          const div = document.createElement('div');
+          div.className = 'list-item';
+          div.innerHTML = `
+            <strong>${(data.docType || 'Document').toUpperCase()}</strong>
+            <div class="muted">${data.fileName || ''} • ${data.createdAt?.toDate?.()?.toLocaleString?.() || ''}</div>
+            <div style="margin-top:8px;">
+              <a href="${data.fileURL}" target="_blank" rel="noopener" download>⬇ Download</a>
+            </div>
+          `;
+          myDocsList.appendChild(div);
+        });
+
+      } catch (err) {
+        console.error('fetch my docs failed', err);
+        alert('Failed to fetch documents: ' + (err.message || err));
+      }
+    });
+
+    mydocsResetBtn?.addEventListener('click', () => {
+      document.getElementById('mydocsPassword').value = '';
+      myDocsList.innerHTML = '';
+    });
+
+    /* ==========================
+       Attendance: student view
+       (added per request; uses same attendance collection layout)
+       ========================== */
+
+    // initAttendanceForStudent() will query for classes where user is member,
+    // then listen to each class' attendance subcollection and compute working/present days.
+    // Called when attendance tab is opened (or can be called manually).
+
+    let attendanceInitialized = false;
+
+    function initAttendanceForStudent() {
+      if (!auth.currentUser) {
+        console.warn('Attendance: no auth user');
+        return;
+      }
+      if (attendanceInitialized) {
+        // already running listeners - leave them (onSnapshot updates UI live)
+        return;
+      }
+      attendanceInitialized = true;
+
+      const uid = auth.currentUser.uid;
+      // query classes where user is member
+      try {
+        const q = query(collection(db, 'classes'), where('members', 'array-contains', uid));
+        onSnapshot(q, classSnap => {
+          const area = document.getElementById('attendanceArea');
+          area.innerHTML = '';
+          if (classSnap.empty) {
+            area.innerHTML = '<div class="muted">You are not a member of any class.</div>';
+            return;
+          }
+
+          // for each class create row + details and attach listener to attendance subcollection
+          classSnap.forEach(cdoc => {
+            const cdata = cdoc.data();
+            const cid = cdoc.id;
+
+            // wrapper
+            const wrapper = document.createElement('div');
+
+            // row
+            const row = document.createElement('div');
+            row.className = 'attendance-row clickable';
+            row.setAttribute('data-classid', cid);
+
+            const left = document.createElement('div');
+            left.className = 'attendance-left';
+
+            const dot = document.createElement('div');
+            dot.className = 'dot gray';
+            dot.title = 'Attendance status';
+
+            const title = document.createElement('div');
+            title.innerHTML = `<div class="attendance-title">${escapeHtml(cdata.name || '(Class)')}</div>
+              <div class="muted">${escapeHtml(cdata.code || '')}</div>`;
+
+            left.appendChild(dot);
+            left.appendChild(title);
+
+            const meta = document.createElement('div');
+            meta.className = 'attendance-meta';
+            // alert bubble then percent label (alert bubble left of percent)
+            const alertBubble = document.createElement('div');
+            alertBubble.className = 'alert-bubble';
+            alertBubble.style.display = 'none'; // default hidden, shown when needed
+            alertBubble.textContent = '!';
+
+            const percentLabel = document.createElement('div');
+            percentLabel.className = 'percent-label';
+            percentLabel.textContent = '--%';
+
+            meta.appendChild(alertBubble);
+            meta.appendChild(percentLabel);
+
+            row.appendChild(left);
+            row.appendChild(meta);
+
+            const details = document.createElement('div');
+            details.className = 'attendance-details';
+            details.innerHTML = '<div class="muted">Loading details…</div>';
+
+            // click toggles details
+            row.addEventListener('click', () => {
+              const visible = details.style.display === 'block';
+              // close others
+              document.querySelectorAll('.attendance-details').forEach(d => d.style.display = 'none');
+              if (!visible) details.style.display = 'block';
+              else details.style.display = 'none';
+            });
+
+            wrapper.appendChild(row);
+            wrapper.appendChild(details);
+            area.appendChild(wrapper);
+
+            // listen attendance docs for this class
+            const attCol = collection(db, 'classes', cid, 'attendance');
+            onSnapshot(attCol, snap => {
+              let workingDays = 0;
+              let presentDays = 0;
+              snap.forEach(aDoc => {
+                const ad = aDoc.data();
+                if (!ad) return;
+                if (ad.holiday) return;
+                workingDays++;
+                const rec = ad.records || {};
+                if (rec[uid] === 'present') presentDays++;
+              });
+
+              const percent = workingDays === 0 ? null : Math.round((presentDays / workingDays) * 100);
+              // update percentLabel and dot
+              percentLabel.textContent = (percent === null) ? '—' : (percent + '%');
+
+              dot.className = 'dot'; // reset classes
+              if (percent === null) {
+                dot.classList.add('gray');
+                dot.title = 'No working days recorded';
+                alertBubble.style.display = 'none';
+              } else {
+                if (percent < 70) {
+                  dot.classList.add('red');
+                  dot.title = `Low attendance: ${percent}%`;
+                  alertBubble.style.display = 'inline-flex';
+                } else if (percent >= 70 && percent <= 80) {
+                  dot.classList.add('orange');
+                  dot.title = `Moderate attendance: ${percent}%`;
+                  // show bubble for moderate as well (you can hide if not needed)
+                  alertBubble.style.display = 'inline-flex';
+                  alertBubble.style.background = '#f0932b';
+                } else {
+                  dot.classList.add('green');
+                  dot.title = `Good attendance: ${percent}%`;
+                  alertBubble.style.display = 'none';
+                }
+              }
+
+              // update details content
+              details.innerHTML = `
+                <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                  <div><strong>Working days:</strong> ${workingDays}</div>
+                  <div><strong>Present days:</strong> ${presentDays}</div>
+                  <div><strong>Attendance:</strong> ${percent === null ? '—' : percent + '%'}</div>
+                </div>
+                <div class="muted" style="margin-top:8px;">This counts attendance documents under <code>classes/${cid}/attendance</code>. Holidays are excluded.</div>
+              `;
+            }, err => {
+              console.error('attendance listen error', err);
+              details.innerHTML = `<div class="muted">Failed to load attendance: ${escapeHtml(err?.message || String(err))}</div>`;
+            });
+
+          }); // end forEach class
+        }, err => {
+          console.error('classes query failed', err);
+          document.getElementById('attendanceArea').innerHTML = `<div class="muted">Failed to fetch classes: ${escapeHtml(err?.message || String(err))}</div>`;
+        });
+      } catch (e) {
+        console.error('initAttendanceForStudent failed', e);
+        document.getElementById('attendanceArea').innerHTML = `<div class="muted">Attendance initialization error: ${escapeHtml(e?.message || String(e))}</div>`;
+      }
+    }
+
+    /* ---------- Utility ---------- */
+    function escapeHtml(str) {
+      if (!str && str !== 0) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+
+</html>

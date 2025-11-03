@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌐 Global Chat – Campus Connect</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #ece5dd;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #128c7e;
+      color: #fff;
+      text-align: center;
+      padding: 14px;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    #chat-box {
+      flex: 1;
+      overflow-y: auto;
+      background: #fff;
+      margin: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .msg-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-weight: bold;
+      color: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 14px;
+    }
+
+    .msg {
+      background: #f0f0f0;
+      border-radius: 10px;
+      padding: 8px 12px;
+      max-width: 75%;
+      word-wrap: break-word;
+    }
+
+    .self .msg {
+      background: #dcf8c6;
+      margin-left: auto;
+    }
+
+    .msg-name {
+      font-weight: 600;
+      font-size: 13px;
+      color: #075e54;
+      margin-bottom: 3px;
+    }
+
+    #input-area {
+      display: flex;
+      margin: 10px;
+      gap: 8px;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    button {
+      background: #128c7e;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    button:hover {
+      background: #0d766b;
+    }
+  </style>
+</head>
+
+<body>
+  <header>🌐 Global Chat</header>
+
+  <div id="chat-box"></div>
+
+  <div id="input-area">
+    <input id="msgInput" type="text" placeholder="Type a message..." />
+    <button id="sendBtn">➤</button>
+  </div>
+
+  <script type="module">
+    import {
+      db, auth, onAuthStateChanged,
+      collection, addDoc, serverTimestamp, onSnapshot, orderBy, query
+    } from "./server.js";
+
+    const msgInput = document.getElementById("msgInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const chatBox = document.getElementById("chat-box");
+
+    function getAvatarColor(name) {
+      const colors = ["#ffadad", "#ffd6a5", "#fdffb6", "#caffbf", "#9bf6ff", "#a0c4ff", "#bdb2ff", "#ffc6ff"];
+      let hash = 0;
+      for (let i = 0; i < name.length; i++)
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      return colors[Math.abs(hash) % colors.length];
+    }
+
+    function createAvatar(name) {
+      const initials = name ? name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "?";
+      const bg = getAvatarColor(name || "U");
+      return `<div class="avatar" style="background:${bg};">${initials}</div>`;
+    }
+
+    // Wait for Firebase Auth
+    onAuthStateChanged(auth, (u) => {
+      if (!u) {
+        alert("Please log in first.");
+        window.location.href = "index.html";
+        return;
+      }
+      const user = { name: u.displayName || u.email || "User", uid: u.uid };
+      initChat(user);
+    });
+
+    function initChat(user) {
+      // Send Message
+      sendBtn.onclick = async () => {
+        const text = msgInput.value.trim();
+        if (!text) return;
+        await addDoc(collection(db, "globalChat"), {
+          text,
+          senderName: user.name,
+          senderUid: user.uid,
+          timestamp: serverTimestamp()
+        });
+        msgInput.value = "";
+      };
+
+      // Realtime Listener
+      const q = query(collection(db, "globalChat"), orderBy("timestamp", "asc"));
+      onSnapshot(q, (snapshot) => {
+        chatBox.innerHTML = "";
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const isSelf = data.senderUid === user.uid;
+          const msgRow = document.createElement("div");
+          msgRow.className = "msg-row" + (isSelf ? " self" : "");
+          msgRow.innerHTML = `
+            ${!isSelf ? createAvatar(data.senderName) : ""}
+            <div class="msg">
+              ${!isSelf ? `<div class="msg-name">${data.senderName}</div>` : ""}
+              <div>${data.text}</div>
+            </div>
+            ${isSelf ? createAvatar(data.senderName) : ""}
+          `;
+          chatBox.appendChild(msgRow);
+        });
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+    }
+  </script>
+</body>
+
+</html>

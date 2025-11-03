@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Teacher Panel — Unified Firestore</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" href="CAMPUS CONNECT.png" />
+    <style>
+        /* Campus Connect themed visuals only — functionality unchanged */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #f2f4f8;
+            padding: 18px;
+            color: #111;
+        }
+
+        /* Header: green Campus Connect gradient */
+        header {
+            background: linear-gradient(180deg, #20b39a 0%, #17a88a 100%);
+            color: #fff;
+            padding: 16px 18px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(23, 168, 138, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        header img.logo {
+            height: 56px;
+            display: inline-block;
+        }
+
+        header .title-block {
+            text-align: left;
+        }
+
+        header .title-block h1 {
+            font-size: 20px;
+            line-height: 1;
+            margin-bottom: 4px;
+            font-weight: 800;
+        }
+
+        header .title-block p {
+            margin: 0;
+            font-size: 13px;
+            opacity: .95;
+        }
+
+        .card {
+            background: #ffffff;
+            padding: 14px;
+            border-radius: 12px;
+            margin-top: 16px;
+            box-shadow: 0 6px 18px rgba(18, 78, 64, 0.04);
+            border: 1px solid #eef7f4;
+        }
+
+        input,
+        textarea,
+        select {
+            display: block;
+            margin: 8px 0;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #dcefe8;
+            width: 100%;
+            background: #fbfffe;
+            font-size: 14px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 9px 14px;
+            border-radius: 10px;
+            border: 0;
+            font-weight: 700;
+            cursor: pointer;
+            margin: 4px;
+            box-shadow: 0 6px 14px rgba(23, 168, 138, 0.08);
+        }
+
+        .btn.primary {
+            background: #18ab91;
+            color: #fff;
+        }
+
+        .btn.secondary {
+            background: #fff;
+            color: #18ab91;
+            border: 1px solid rgba(24, 171, 145, 0.12);
+            font-weight: 700;
+        }
+
+        .btn.secondary:hover {
+            background: rgba(24, 171, 145, 0.06);
+        }
+
+        .question {
+            padding: 12px;
+            border-radius: 10px;
+            background: #fbfffe;
+            border: 1px solid #e6f6f2;
+            margin-top: 10px;
+            position: relative;
+            box-shadow: 0 3px 10px rgba(11, 63, 52, 0.02);
+        }
+
+        .test-item {
+            border-bottom: 1px solid #eef7f4;
+            padding: 10px 0;
+        }
+
+        .small {
+            font-size: 13px;
+            color: #556b64;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            margin-left: 8px;
+            font-weight: 700;
+        }
+
+        .badge.draft {
+            background: #fff7f3;
+            color: #7b6b5a;
+            border: 1px solid #f0e9e3;
+        }
+
+        .badge.live {
+            background: #e6fff6;
+            color: #0a7a3d;
+            border: 1px solid #bfe8cf;
+        }
+
+        .badge.ended {
+            background: #fff6f6;
+            color: #b20f0f;
+            border: 1px solid #ffd6d6;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+            align-items: center;
+        }
+
+        /* responsive tweaks */
+        @media (max-width: 820px) {
+            header {
+                padding: 12px;
+                gap: 8px;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .toolbar {
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <img class="logo" src="CAMPUS CONNECT.png" alt="Campus Connect">
+        <div class="title-block">
+            <h1>Teacher Panel</h1>
+            <p>Unified Firestore — Manage tests & responses</p>
+        </div>
+    </header>
+
+    <div class="card" id="authCard">
+        <div id="authStatus">Checking auth...</div>
+        <button class="btn primary" id="signOutBtn" style="display:none">Sign out</button>
+    </div>
+
+    <div class="card" id="controls" style="display:none">
+        <div class="toolbar">
+            <button class="btn primary" id="newTestBtn">➕ New Test</button>
+            <button class="btn secondary" id="refreshBtn">Refresh Tests</button>
+            <div id="teacherNote" class="small"></div>
+        </div>
+    </div>
+
+    <div class="card" id="testListCard" style="display:none">
+        <h3 style="color:#124e40;margin:0 0 8px 0;">All Tests</h3>
+        <div id="testList"></div>
+    </div>
+
+    <div class="card" id="testForm" style="display:none">
+        <h3 id="formTitle" style="color:#18ab91">Create / Edit Test</h3>
+        <input id="testTitle" placeholder="Test Title" />
+        <textarea id="testDescription" placeholder="Description (optional)"></textarea>
+        <input id="testDuration" type="number" placeholder="Duration (minutes)" />
+        <label style="display:block;margin-top:6px;">Publish At: <input id="publishAt" type="datetime-local" /></label>
+        <label style="display:block;margin-top:6px;">Expire At: <input id="expireAt" type="datetime-local" /></label>
+        <select id="accessMode" style="margin-top:8px;">
+            <option value="private">Private</option>
+            <option value="public">Public</option>
+        </select>
+        <input id="generatedCode" placeholder="Generated Test Code" readonly />
+        <div class="toolbar" style="margin-top:8px;">
+            <button class="btn primary" id="genCodeBtn">Generate Code</button>
+            <button class="btn secondary" id="copyCodeBtn">Copy Code</button>
+            <button class="btn secondary" id="addQuestionBtn">Add Question</button>
+        </div>
+        <div id="questionList"></div>
+        <div class="toolbar" style="margin-top:12px;">
+            <button class="btn primary" id="saveTestBtn">💾 Save Test</button>
+            <button class="btn secondary" id="publishOnceBtn" title="Publish (only once)">🚀 Publish Test</button>
+            <button class="btn secondary" id="endTestBtn" title="End test early or at time">⛔ End Test</button>
+            <button class="btn secondary" id="publishResultsBtn" title="Visible to students after end">📣 Publish
+                Results</button>
+            <button class="btn secondary" id="downloadCsvBtn" title="Download responses as Excel CSV">⬇️ Download
+                Responses (CSV)</button>
+        </div>
+        <div id="saveStatus" class="small" style="margin-top:8px;"></div>
+        <div id="lifecycleHint" class="small" style="margin-top:6px;"></div>
+    </div>
+
+    <script type="module">
+        // Firebase modular imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import {
+            getFirestore, doc, setDoc, getDoc, getDocs, collection, query, where,
+            deleteDoc, updateDoc, serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // --- CONFIG (yours) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAFKmM22FUSQPYy-eMsBzcZN3bmAxglXl0",
+            authDomain: "smart-timetable-266fe.firebaseapp.com",
+            projectId: "smart-timetable-266fe",
+            storageBucket: "smart-timetable-266fe.appspot.com",
+            messagingSenderId: "843230713835",
+            appId: "1:843230713835:web:b97d024f4fcf9a40ceabae",
+            measurementId: "G-DDY9NVEK8R"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // --- Role check ---
+        async function getRole(uid, email) {
+            try {
+                const uDoc = await getDoc(doc(db, "users", uid));
+                if (uDoc.exists()) {
+                    const r = (uDoc.data().role || "").toString().toLowerCase();
+                    if (r === "teacher" || r === "faculty") return "teacher";
+                    if (r) return r;
+                }
+            } catch (e) { console.warn("role read failed", e); }
+            if (email && /teacher|faculty|staff/i.test(email)) return "teacher";
+            return "student";
+        }
+
+        // --- DOM refs ---
+        const authStatus = document.getElementById("authStatus");
+        const signOutBtn = document.getElementById("signOutBtn");
+        const controls = document.getElementById("controls");
+        const testListCard = document.getElementById("testListCard");
+        const testList = document.getElementById("testList");
+        const testForm = document.getElementById("testForm");
+        const formTitle = document.getElementById("formTitle");
+
+        const testTitle = document.getElementById("testTitle");
+        const testDescription = document.getElementById("testDescription");
+        const testDuration = document.getElementById("testDuration");
+        const publishAt = document.getElementById("publishAt");
+        const expireAt = document.getElementById("expireAt");
+        const accessMode = document.getElementById("accessMode");
+        const generatedCode = document.getElementById("generatedCode");
+        const questionList = document.getElementById("questionList");
+        const saveStatus = document.getElementById("saveStatus");
+        const lifecycleHint = document.getElementById("lifecycleHint");
+
+        const newTestBtn = document.getElementById("newTestBtn");
+        const refreshBtn = document.getElementById("refreshBtn");
+        const genCodeBtn = document.getElementById("genCodeBtn");
+        const copyCodeBtn = document.getElementById("copyCodeBtn");
+        const addQuestionBtn = document.getElementById("addQuestionBtn");
+        const saveTestBtn = document.getElementById("saveTestBtn");
+
+        const publishOnceBtn = document.getElementById("publishOnceBtn");
+        const endTestBtn = document.getElementById("endTestBtn");
+        const publishResultsBtn = document.getElementById("publishResultsBtn");
+        const downloadCsvBtn = document.getElementById("downloadCsvBtn");
+
+        // --- State ---
+        let questions = []; // indices
+        let editingCode = null; // current code in form
+        let currentStatus = "draft"; // draft | live | ended
+        let me = null;
+
+        // --- Auth handling ---
+        onAuthStateChanged(auth, async user => {
+            if (!user) {
+                authStatus.innerHTML = 'Not signed in — open this page after signing in.';
+                controls.style.display = "none";
+                testListCard.style.display = "none";
+                testForm.style.display = "none";
+                signOutBtn.style.display = "none";
+                return;
+            }
+            me = user;
+            signOutBtn.style.display = "inline-block";
+            signOutBtn.onclick = () => signOut(auth);
+            authStatus.innerHTML = `Signed in as <strong>${user.email}</strong>`;
+            const role = await getRole(user.uid, user.email);
+            if (role !== "teacher") {
+                authStatus.innerHTML += `<br><span style="color:crimson">Access denied — you are not a teacher.</span>`;
+                controls.style.display = "none";
+                testListCard.style.display = "none";
+                testForm.style.display = "none";
+                return;
+            }
+            controls.style.display = "block";
+            testListCard.style.display = "block";
+            loadTests();
+        });
+
+        // --- Helpers ---
+        function setLifecycleUI(status) {
+            currentStatus = status || "draft";
+            // Buttons enabled based on lifecycle
+            publishOnceBtn.style.display = (currentStatus === "draft") ? "inline-block" : "none";
+            endTestBtn.style.display = (currentStatus === "live") ? "inline-block" : "none";
+            publishResultsBtn.style.display = (currentStatus === "ended") ? "inline-block" : "none";
+            downloadCsvBtn.style.display = (editingCode) ? "inline-block" : "none";
+
+            lifecycleHint.textContent =
+                currentStatus === "draft" ? "Status: DRAFT — you can edit and publish once."
+                    : currentStatus === "live" ? "Status: LIVE — students can take it. You may end it anytime."
+                        : currentStatus === "ended" ? "Status: ENDED — no more attempts. You may publish results."
+                            : "";
+        }
+
+        function showTestForm() {
+            testForm.style.display = "block";
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function clearForm() {
+            formTitle.textContent = "Create / Edit Test";
+            testTitle.value = "";
+            testDescription.value = "";
+            testDuration.value = "";
+            publishAt.value = "";
+            expireAt.value = "";
+            accessMode.value = "private";
+            generatedCode.value = "";
+            questionList.innerHTML = "";
+            questions = [];
+            editingCode = null;
+            setLifecycleUI("draft");
+            saveStatus.textContent = "";
+        }
+
+        function addQuestion() {
+            const idx = questions.length ? Math.max(...questions) + 1 : 0;
+            questions.push(idx);
+            const container = document.createElement("div");
+            container.className = "question";
+            container.id = `question_${idx}`;
+            container.innerHTML = `
+        <button style="position:absolute;right:8px;top:8px" onclick="deleteQuestion(${idx})">✖</button>
+        <strong>Question ${idx + 1}</strong>
+        <textarea id="q${idx}_text" placeholder="Question text"></textarea>
+        <select id="q${idx}_type" onchange="toggleOptions(${idx})">
+          <option value="mcq">MCQ</option>
+          <option value="text">Text</option>
+        </select>
+        <div id="q${idx}_options">
+          <input id="q${idx}_opt0" placeholder="Option A" />
+          <input id="q${idx}_opt1" placeholder="Option B" />
+          <input id="q${idx}_opt2" placeholder="Option C" />
+          <input id="q${idx}_opt3" placeholder="Option D" />
+        </div>
+        <input id="q${idx}_answer" placeholder="Correct Answer (exact match for MCQ)" />
+        <input id="q${idx}_marks" type="number" placeholder="Marks (default 1)" />
+      `;
+            questionList.appendChild(container);
+        }
+        window.addQuestion = addQuestion;
+
+        window.deleteQuestion = function (index) {
+            const el = document.getElementById(`question_${index}`);
+            if (el) el.remove();
+            questions = questions.filter(i => i !== index);
+        };
+
+        window.toggleOptions = function (index) {
+            const t = document.getElementById(`q${index}_type`).value;
+            const optDiv = document.getElementById(`q${index}_options`);
+            optDiv.style.display = t === "mcq" ? "block" : "none";
+        };
+
+        function generateTestCode() {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            let code = "TEST-";
+            for (let i = 0; i < 5; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+            generatedCode.value = code;
+        }
+        function copyCode() {
+            navigator.clipboard.writeText(generatedCode.value || "");
+            alert("Copied!");
+        }
+
+        // --- Save (merge; keep lifecycle fields intact unless not set) ---
+        async function saveTest() {
+            const code = generatedCode.value.trim();
+            const title = testTitle.value.trim();
+            const description = testDescription.value.trim();
+            const duration = parseInt(testDuration.value) || 0;
+            const _publishAt = publishAt.value;
+            const _expireAt = expireAt.value;
+            const mode = accessMode.value;
+
+            if (!code || !title || !_publishAt || !_expireAt) {
+                saveStatus.textContent = "Please fill title, code, publish and expire times.";
+                return;
+            }
+
+            const qList = questions.map(i => {
+                const q = {
+                    text: document.getElementById(`q${i}_text`).value.trim(),
+                    type: document.getElementById(`q${i}_type`).value,
+                    marks: parseInt(document.getElementById(`q${i}_marks`).value) || 1,
+                    answer: (document.getElementById(`q${i}_answer`)?.value || "").trim()
+                };
+                if (q.type === "mcq") {
+                    q.options = [
+                        document.getElementById(`q${i}_opt0`).value.trim(),
+                        document.getElementById(`q${i}_opt1`).value.trim(),
+                        document.getElementById(`q${i}_opt2`).value.trim(),
+                        document.getElementById(`q${i}_opt3`).value.trim()
+                    ];
+                }
+                return q;
+            });
+
+            // preserve lifecycle fields with merge
+            const payload = {
+                title, description, duration,
+                publishAt: _publishAt, expireAt: _expireAt,
+                accessMode: mode, questions: qList,
+                createdBy: me?.uid || "unknown",
+                updatedAt: serverTimestamp()
+            };
+
+            await setDoc(doc(db, "tests", code), {
+                ...payload,
+                // set defaults if missing (first creation)
+                status: currentStatus || "draft",
+                published: (currentStatus === "live"),
+                resultsPublished: false
+            }, { merge: true });
+
+            saveStatus.textContent = `Saved test ${code}`;
+            editingCode = code;
+            loadTests();
+            setLifecycleUI(currentStatus); // refresh buttons
+        }
+
+        // --- Publish once (draft -> live) ---
+        async function publishOnce() {
+            const code = (editingCode || generatedCode.value || "").trim();
+            if (!code) return alert("Save and generate a test code first.");
+            const snap = await getDoc(doc(db, "tests", code));
+            if (!snap.exists()) return alert("Save the test before publishing.");
+            const data = snap.data();
+            if (data.status === "live" || data.status === "ended") {
+                return alert("This test has already been published.");
+            }
+            await updateDoc(doc(db, "tests", code), {
+                status: "live",
+                published: true,
+                publishedAt: serverTimestamp()
+            });
+            alert("Test published!");
+            setLifecycleUI("live");
+            loadTests();
+        }
+
+        // --- End test (live -> ended), can end early ---
+        async function endTest() {
+            const code = (editingCode || generatedCode.value || "").trim();
+            if (!code) return alert("No test selected.");
+            const snap = await getDoc(doc(db, "tests", code));
+            if (!snap.exists()) return alert("No such test.");
+            const data = snap.data();
+            if (data.status !== "live") {
+                return alert("Only live tests can be ended.");
+            }
+            await updateDoc(doc(db, "tests", code), {
+                status: "ended",
+                endedAt: serverTimestamp()
+            });
+            alert("Test ended.");
+            setLifecycleUI("ended");
+            loadTests();
+        }
+
+        // --- Publish Results (after ended) ---
+        async function publishResults() {
+            const code = (editingCode || generatedCode.value || "").trim();
+            if (!code) return alert("No test selected.");
+            const snap = await getDoc(doc(db, "tests", code));
+            if (!snap.exists()) return alert("No such test.");
+            const data = snap.data();
+            if (data.status !== "ended") return alert("You can publish results only after the test ends.");
+            await updateDoc(doc(db, "tests", code), {
+                resultsPublished: true,
+                resultsPublishedAt: serverTimestamp()
+            });
+            alert("Results published.");
+            loadTests();
+        }
+
+        // --- Download responses as CSV (Excel-friendly) ---
+        async function downloadResponsesCsv() {
+            const code = (editingCode || generatedCode.value || "").trim();
+            if (!code) return alert("No test selected.");
+            // fetch responses for this test
+            const rs = await getDocs(query(collection(db, "responses"), where("testId", "==", code)));
+            const rows = [["Name", "Roll No", "Auto Score", "Manual Score", "Total", "Submitted At"]];
+            rs.forEach(docSnap => {
+                const r = docSnap.data();
+                const name = r.studentName || r.name || r.studentId || "";
+                const roll = r.rollNo || r.studentRoll || r.roll || r.rollno || "";
+                const auto = Number(r.autoScore || 0);
+                const manual = Number(r.manualScore || 0);
+                const total = auto + manual;
+                const submittedAt = r.submittedAt?.toDate ? r.submittedAt.toDate().toLocaleString() : (r.submittedAt || "");
+                rows.push([name, roll, auto, manual, total, submittedAt]);
+            });
+            const csv = rows.map(row =>
+                row.map(cell => {
+                    // escape quotes, wrap with quotes if needed
+                    const s = String(cell ?? "");
+                    if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+                    return s;
+                }).join(",")
+            ).join("\n");
+
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `responses_${code}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        // --- Load tests list ---
+        async function loadTests() {
+            testList.innerHTML = "<em>Loading…</em>";
+            try {
+                const snap = await getDocs(collection(db, "tests"));
+                testList.innerHTML = "<h4 style='margin:0 0 8px 0;color:#124e40;'>Created Tests</h4>";
+                if (snap.empty) { testList.innerHTML += "<p>No tests found</p>"; return; }
+                snap.forEach(docSnap => {
+                    const d = docSnap.data();
+                    const code = docSnap.id;
+                    const status = (d.status || "draft");
+                    const badgeClass = status === "live" ? "live" : status === "ended" ? "ended" : "draft";
+                    const div = document.createElement("div");
+                    div.className = "test-item";
+                    div.innerHTML = `
+            <strong style="color:#124e40">${d.title || "(Untitled)"} </strong>
+            <span class="badge ${badgeClass}">${status.toUpperCase()}</span>
+            <span class="small">(${code})</span><br>
+            <span class="small">Duration: ${d.duration || 0}m • Published: ${d.published ? "Yes" : "No"} • Results: ${d.resultsPublished ? "Published" : "Hidden"}</span>
+            <div class="toolbar" style="margin-top:8px;">
+              <button class="btn secondary" onclick="editTest('${code}')">Edit</button>
+              <button class="btn secondary" onclick="deleteTest('${code}')">Delete</button>
+              ${status === "draft" ? `<button class="btn secondary" onclick="publishOnceList('${code}')">Publish</button>` : ``}
+              ${status === "live" ? `<button class="btn secondary" onclick="endTestList('${code}')">End Test</button>` : ``}
+              ${status === "ended" ? `<button class="btn secondary" onclick="publishResultsList('${code}')">Publish Results</button>` : ``}
+              <button class="btn secondary" onclick="downloadResponsesCsvList('${code}')">Download CSV</button>
+            </div>
+          `;
+                    testList.appendChild(div);
+                });
+            } catch (e) {
+                console.error(e);
+                testList.innerHTML = "<p>Failed to load tests</p>";
+            }
+        }
+        window.loadTests = loadTests;
+
+        // --- Edit / Delete from list ---
+        window.editTest = async function (code) {
+            const snap = await getDoc(doc(db, "tests", code));
+            if (!snap.exists()) return alert("Not found");
+            const data = snap.data();
+            clearForm();
+            editingCode = code;
+            generatedCode.value = code;
+            testTitle.value = data.title || "";
+            testDescription.value = data.description || "";
+            testDuration.value = data.duration || "";
+            publishAt.value = data.publishAt || "";
+            expireAt.value = data.expireAt || "";
+            accessMode.value = data.accessMode || "private";
+            questionList.innerHTML = "";
+            questions = [];
+            (data.questions || []).forEach((q, i) => {
+                addQuestion();
+                document.getElementById(`q${i}_text`).value = q.text || "";
+                document.getElementById(`q${i}_type`).value = q.type || "mcq";
+                document.getElementById(`q${i}_marks`).value = q.marks || 1;
+                document.getElementById(`q${i}_answer`).value = q.answer || "";
+                if (q.type === "mcq") {
+                    document.getElementById(`q${i}_opt0`).value = q.options?.[0] || "";
+                    document.getElementById(`q${i}_opt1`).value = q.options?.[1] || "";
+                    document.getElementById(`q${i}_opt2`).value = q.options?.[2] || "";
+                    document.getElementById(`q${i}_opt3`).value = q.options?.[3] || "";
+                } else {
+                    document.getElementById(`q${i}_options`).style.display = "none";
+                }
+            });
+            setLifecycleUI(data.status || "draft");
+            formTitle.textContent = `Editing: ${code}`;
+            showTestForm();
+        };
+
+        window.deleteTest = async function (code) {
+            if (!confirm("Delete test?")) return;
+            await deleteDoc(doc(db, "tests", code));
+            if (editingCode === code) { clearForm(); }
+            loadTests();
+        };
+
+        // --- List action bridges (call same logic as form buttons) ---
+        window.publishOnceList = async function (code) {
+            editingCode = code;
+            await publishOnce();
+        };
+        window.endTestList = async function (code) {
+            editingCode = code;
+            await endTest();
+        };
+        window.publishResultsList = async function (code) {
+            editingCode = code;
+            await publishResults();
+        };
+        window.downloadResponsesCsvList = async function (code) {
+            editingCode = code;
+            await downloadResponsesCsv();
+        };
+
+        // --- Grade auto (same as your original) ---
+        window.gradeAuto = async function () {
+            const code = (editingCode || generatedCode.value || "").trim();
+            if (!code) return alert("Enter code to auto-grade responses for");
+            const tSnap = await getDoc(doc(db, "tests", code));
+            if (!tSnap.exists()) return alert("test not found");
+            const t = tSnap.data();
+            const rsnap = await getDocs(query(collection(db, "responses"), where("testId", "==", code)));
+            let updates = 0;
+            for (const rDoc of rsnap.docs) {
+                const r = rDoc.data();
+                let auto = 0;
+                let totalPossible = 0;
+                (t.questions || []).forEach((q, i) => {
+                    totalPossible += (q.marks || 0);
+                    if (q.type === "mcq") {
+                        const studentAns = (r.answers?.[`q${i}`] || "").trim();
+                        if (studentAns && q.answer && studentAns === q.answer) auto += (q.marks || 0);
+                    }
+                });
+                await updateDoc(rDoc.ref, { autoScore: auto, totalPossible, graded: false });
+                updates++;
+            }
+            alert(`Auto-graded ${updates} responses`);
+        };
+
+        // --- Wire top controls ---
+        newTestBtn.onclick = () => { clearForm(); generateTestCode(); showTestForm(); };
+        refreshBtn.onclick = () => loadTests();
+        genCodeBtn.onclick = () => generateTestCode();
+        copyCodeBtn.onclick = () => copyCode();
+        addQuestionBtn.onclick = () => addQuestion();
+        saveTestBtn.onclick = () => saveTest();
+
+        publishOnceBtn.onclick = () => publishOnce();
+        endTestBtn.onclick = () => endTest();
+        publishResultsBtn.onclick = () => publishResults();
+        downloadCsvBtn.onclick = () => downloadResponsesCsv();
+
+        // Expose small helpers globally for inline onclicks created dynamically
+        window.openResponse = async function (docId, code) {
+            const rsnap = await getDoc(doc(db, "responses", docId));
+            if (!rsnap.exists()) return alert("not found");
+            const r = rsnap.data();
+            const tsnap = await getDoc(doc(db, "tests", code));
+            if (!tsnap.exists()) return alert("test missing");
+            const t = tsnap.data();
+
+            const w = window.open("", "_blank", "width=700,height=700");
+            let html = `<h2>Grade: ${r.studentName || r.studentId}</h2>`;
+            html += `<form id="gradeForm">`;
+            t.questions.forEach((q, i) => {
+                const ans = r.answers?.[`q${i}`] ?? "";
+                html += `<div style="border:1px solid #eee;padding:8px;margin:8px">
+          <strong>Q${i + 1} (${q.marks}):</strong> <div>${q.text}</div>
+          <div><em>Answer:</em> ${ans}</div>
+          <label>Manual points (if any): <input id="man_${i}" type="number" value="0" /></label>
+        </div>`;
+            });
+            html += `<label>Total manual score: <input id="manualTotal" type="number" /></label>`;
+            html += `<button type="button" id="saveBtn">Save Grades</button></form>`;
+            w.document.write(html);
+
+            w.document.getElementById("saveBtn").onclick = async () => {
+                const manual = Number(w.document.getElementById("manualTotal").value) || 0;
+                await updateDoc(doc(db, "responses", docId), { manualScore: manual, graded: true });
+                alert("Saved");
+                w.close();
+            };
+        };
+    </script>
+</body>
+
+</html>

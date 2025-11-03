@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>All Test Results — Campus Connect</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        /* Updated Campus Connect theme (visual only) */
+        :root {
+            --cc-green-start: #20b39a;
+            --cc-green-end: #17a88a;
+            --card-bg: #ffffff;
+            --page-bg: #f6fbfa;
+            --muted: #6b7280;
+            --accent: #18ab91;
+            --danger: #e74c3c;
+            --surface-border: rgba(0, 0, 0, 0.06);
+            --radius: 12px;
+            --shadow: 0 8px 22px rgba(12, 66, 56, 0.08);
+            --glass: rgba(255, 255, 255, 0.6);
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(180deg, #f2f7f5 0%, #f6fbfa 100%);
+            color: #071f18;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding: 26px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* Faculty-style header: logo left, title block next to it, profile button top-right */
+        header {
+            background: linear-gradient(180deg, #20b39a 0%, #17a88a 100%);
+            color: #fff;
+            padding: 18px;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+            text-align: center;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        header .logo {
+            height: 56px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        header .title-block {
+            display: inline-block;
+            vertical-align: middle;
+            text-align: left;
+        }
+
+        header h1 {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        header p {
+            font-size: 13px;
+            margin: 0;
+            opacity: .95;
+        }
+
+
+
+        .card {
+            background: var(--card-bg);
+            padding: 18px;
+            border-radius: var(--radius);
+            margin-top: 18px;
+            box-shadow: 0 6px 20px rgba(10, 48, 40, 0.035);
+            border: 1px solid var(--surface-border);
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        h2 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            color: #07221b;
+        }
+
+        input {
+            display: block;
+            margin: 8px 0;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid #d6e7e1;
+            width: 100%;
+            background: linear-gradient(180deg, #ffffff 0%, #fbfffe 100%);
+            font-size: 14px;
+            box-shadow: 0 2px 6px rgba(12, 66, 56, 0.02) inset;
+        }
+
+        .btn {
+            cursor: pointer;
+            border-radius: 10px;
+            padding: 10px 14px;
+            border: none;
+            font-weight: 800;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn.primary {
+            background: linear-gradient(180deg, var(--cc-green-start), var(--cc-green-end));
+            color: #fff;
+            box-shadow: 0 8px 20px rgba(23, 168, 138, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .btn.ghost {
+            background: transparent;
+            border: 1px solid rgba(24, 171, 145, 0.12);
+            color: var(--accent);
+            padding: 8px 12px;
+            font-weight: 700;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 14px;
+            background: transparent;
+            border-radius: 8px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eef6f3;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background: transparent;
+            color: var(--muted);
+            font-weight: 700;
+            font-size: 13px;
+            border-bottom: 2px solid #e3eef0;
+        }
+
+        .status {
+            font-weight: 800;
+        }
+
+        .status.green {
+            color: #0f9d78;
+        }
+
+        .status.red {
+            color: var(--danger);
+        }
+
+        .status.gray {
+            color: var(--muted);
+        }
+
+        .result {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            background: linear-gradient(90deg, rgba(24, 171, 145, 0.04), rgba(36, 164, 140, 0.02));
+            border: 1px solid rgba(24, 171, 145, 0.06);
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        /* small responsiveness tweaks */
+        @media (max-width: 820px) {
+            .row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            th,
+            td {
+                padding: 10px;
+                font-size: 13px;
+            }
+
+            header.faculty-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .header-right {
+                margin-left: 0;
+                width: 100%;
+                display: flex;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Faculty-style header (logo height matched to faculty dashboard: 56px) -->
+    <header class="faculty-header container" role="banner" aria-label="Campus Connect header">
+        <img class="logo" src="CAMPUS CONNECT.png" alt="Campus Connect logo" onerror="this.style.display='none'">
+        <div class="title-block" aria-hidden="false">
+            <h1>Campus Connect</h1>
+            <!-- Subtitle changed to "Result" as requested -->
+            <p>Result</p>
+        </div>
+
+        <div class="header-right" role="navigation" aria-label="Header actions">
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card" aria-labelledby="enter-roll">
+            <h2 id="enter-roll">Enter Your Roll Number</h2>
+            <div class="row">
+                <input id="studentId" placeholder="Roll Number / ID" />
+                <button class="btn primary" id="loadBtn">Load My Results</button>
+            </div>
+            <div id="loadError" style="color:var(--danger);margin-top:8px;"></div>
+        </section>
+
+        <section class="card" id="resultsSection" style="display:none;" aria-hidden="true">
+            <h2>Test History</h2>
+            <div style="overflow:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="min-width:260px">Test Title</th>
+                            <th style="width:120px">Status</th>
+                            <th style="width:140px">Result</th>
+                            <th style="width:120px">Score</th>
+                            <th style="width:120px">Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTable"></tbody>
+                </table>
+            </div>
+            <div id="detailsSection" style="margin-top:14px;"></div>
+        </section>
+    </main>
+
+    <!-- Firebase libs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        // SAME CONFIG AS TEACHER PANEL (smart-timetable-266fe)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAFKmM22FUSQPYy-eMsBzcZN3bmAxglXl0",
+            authDomain: "smart-timetable-266fe.firebaseapp.com",
+            projectId: "smart-timetable-266fe",
+            storageBucket: "smart-timetable-266fe.appspot.com",
+            messagingSenderId: "843230713835",
+            appId: "1:843230713835:web:b97d024f4fcf9a40ceabae",
+            measurementId: "G-DDY9NVEK8R"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let allTests = {};
+        let allResponses = {}; // keyed by testId
+
+        async function loadResults() {
+            const sid = (document.getElementById("studentId").value || "").trim();
+            const errorBox = document.getElementById("loadError");
+            errorBox.textContent = "";
+            if (!sid) {
+                errorBox.textContent = "Please enter your roll number.";
+                return;
+            }
+
+            // Get all tests
+            const testSnap = await db.collection("tests").get();
+
+            // Get responses by studentId OR rollNo (merge results)
+            const [byIdSnap, byRollSnap] = await Promise.all([
+                db.collection("responses").where("studentId", "==", sid).get().catch(() => ({ empty: true, docs: [] })),
+                db.collection("responses").where("rollNo", "==", sid).get().catch(() => ({ empty: true, docs: [] }))
+            ]);
+
+            allTests = {};
+            allResponses = {};
+            const addResp = (doc) => {
+                const data = doc.data();
+                if (data && data.testId) allResponses[data.testId] = data;
+            };
+            byIdSnap.docs.forEach(addResp);
+            byRollSnap.docs.forEach(addResp);
+
+            const table = document.getElementById("resultsTable");
+            table.innerHTML = "";
+
+            testSnap.docs.forEach(doc => {
+                const test = doc.data() || {};
+                const testId = doc.id;
+                allTests[testId] = test;
+
+                const response = allResponses[testId];
+
+                const attended = response ? "🟢 Attended" : "🔴 Not Attended";
+                const resultsPublished = Boolean(test.resultsPublished);
+                const resultStatus = resultsPublished ? "✅ Published" : "❌ Not Yet";
+
+                // Score:
+                let score = "—";
+                if (response && resultsPublished) {
+                    // Prefer the scores written by the Teacher Panel
+                    const auto = Number(response.autoScore || 0);
+                    const manual = Number(response.manualScore || 0);
+                    if (auto || manual || response.totalPossible) {
+                        const total = Number(response.totalPossible || (auto + manual));
+                        score = `${auto + manual}/${total || (auto + manual)}`;
+                    } else {
+                        // Fallback: compute MCQ-only from questions/answers
+                        const answers = response.answers || {};
+                        const questions = test.questions || [];
+                        let totalMarks = 0,
+                            scored = 0;
+                        questions.forEach((q, i) => {
+                            const correct = (q.answer || "").trim().toLowerCase();
+                            const given = (answers["q" + i] || "").trim().toLowerCase();
+                            const marks = Number(q.marks || 0);
+                            totalMarks += marks;
+                            if (q.type === "mcq" && correct && given && correct === given) scored += marks;
+                        });
+                        score = `${scored}/${totalMarks || 0}`;
+                    }
+                }
+
+                const row = document.createElement("tr");
+                row.innerHTML = `
+          <td>
+            <div style="font-weight:700;color:#07221b">${escapeHtml(test.title || "(Untitled Test)")}</div>
+            <div class="muted" style="margin-top:6px;font-size:12px">${escapeHtml(testId)}</div>
+          </td>
+          <td class="status ${attended.includes("Attended") ? 'green' : 'red'}">${attended}</td>
+          <td class="status ${resultStatus.includes("Published") ? 'green' : 'gray'}">${resultStatus}</td>
+          <td>${escapeHtml(score)}</td>
+          <td><button class="btn ghost" onclick="viewDetails('${testId}')">View</button></td>
+        `;
+                table.appendChild(row);
+            });
+
+            const section = document.getElementById("resultsSection");
+            section.style.display = "block";
+            section.setAttribute("aria-hidden", "false");
+            document.getElementById("detailsSection").innerHTML = "";
+            section.scrollIntoView({ behavior: "smooth" });
+        }
+
+        function viewDetails(testId) {
+            const test = allTests[testId] || {};
+            const response = allResponses[testId];
+            const container = document.getElementById("detailsSection");
+            container.innerHTML = `<h3 style="margin:0 0 8px 0">${escapeHtml(test.title || "(Untitled Test)")} — Details</h3>`;
+
+            if (!response) {
+                container.innerHTML += `<p style="color:${getComputedStyle(document.documentElement).getPropertyValue('--danger') || '#e74c3c'};font-weight:700">You did not attend this test.</p>`;
+                return;
+            }
+
+            if (!test.resultsPublished) {
+                container.innerHTML += `<p class="muted">Results are not yet published.</p>`;
+                return;
+            }
+
+            const answers = response.answers || {};
+            const questions = test.questions || [];
+            if (!questions.length) {
+                container.innerHTML += `<p class="muted">No question breakdown available.</p>`;
+                return;
+            }
+
+            questions.forEach((q, i) => {
+                const studentAnswer = answers["q" + i] || "";
+                const correctAnswer = q.answer || "";
+                const isCorrect = (q.type === "mcq") ?
+                    studentAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase() :
+                    null; // text questions are manually graded
+                const marks = Number(q.marks || 0);
+
+                const div = document.createElement("div");
+                div.className = "result";
+                div.innerHTML = `
+          <strong>Q${i + 1} (${marks} marks):</strong> ${escapeHtml(q.text || "")}<br>
+          <div style="margin-top:8px"><strong>Your Answer:</strong> ${escapeHtml(studentAnswer || "<em>—</em>")}</div>
+          ${q.type === "mcq" ? `<div style="margin-top:6px"><strong>Correct Answer:</strong> ${escapeHtml(correctAnswer || "<em>—</em>")}</div>` : ``}
+          <div style="margin-top:8px">${q.type === "mcq" ?
+                        `<span class="${isCorrect ? 'status green' : 'status red'}">${isCorrect ? '✔ Correct' : '✘ Incorrect'}</span>` :
+                        `<span class="muted"><strong>Manually graded question</strong></span>`}
+          </div>
+        `;
+                container.appendChild(div);
+            });
+
+            container.scrollIntoView({ behavior: "smooth" });
+        }
+
+        // helper
+        function escapeHtml(s) {
+            if (s === undefined || s === null) return "";
+            return String(s)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        document.getElementById("loadBtn").addEventListener("click", loadResults);
+
+        // allow enter key to submit
+        document.getElementById("studentId").addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                loadResults();
+            }
+        });
+    </script>
+</body>
+
+</html>

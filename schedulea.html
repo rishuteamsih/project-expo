@@ -1,0 +1,867 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Campus Connect — Timetable (Sections) — Admin</title>
+    <style>
+        /* Campus Connect themed light UI */
+        :root {
+            --bg-1: #f6fbfc;
+            --bg-2: #ffffff;
+            --muted: #6b7280;
+            --accent: #0ea5a1;
+            --accent-700: #028f88;
+            --glass: rgba(14, 165, 161, 0.06);
+            --card-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
+            --font: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+            --danger: #e74c3c;
+            --warning: #ffffff;
+            --warning-border: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(180deg, var(--bg-1) 0%, #eef9f9 100%);
+            color: #0f172a;
+            margin: 0;
+            padding: 20px;
+            font-family: var(--font);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app {
+            max-width: 1100px;
+            margin: 10px auto;
+        }
+
+        header {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 14px
+        }
+
+        h1 {
+            font-size: 20px;
+            margin: 0;
+            color: var(--accent-700);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+            align-items: center
+        }
+
+        .tab {
+            background: transparent;
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            color: var(--muted);
+            border: 1px solid transparent;
+        }
+
+        .tab.active {
+            background: linear-gradient(180deg, rgba(14, 165, 161, 0.12), rgba(2, 143, 136, 0.06));
+            color: var(--accent-700);
+            box-shadow: var(--card-shadow);
+            transform: translateY(-1px);
+            border-color: rgba(14, 165, 161, 0.12);
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px
+        }
+
+        .card {
+            background: var(--bg-2);
+            padding: 14px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px
+        }
+
+        .day {
+            background: linear-gradient(180deg, rgba(14, 165, 161, 0.03), rgba(2, 143, 136, 0.01));
+            padding: 10px;
+            border-radius: 8px;
+            min-height: 160px;
+            border: 1px solid rgba(2, 6, 23, 0.03)
+        }
+
+        .day h3 {
+            font-size: 13px;
+            margin: 0 0 6px 0;
+            color: #084c47
+        }
+
+        .slot {
+            padding: 8px;
+            border-radius: 8px;
+            margin: 6px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(180deg, rgba(3, 105, 100, 0.03), rgba(3, 105, 100, 0.01));
+            border: 1px solid rgba(3, 105, 100, 0.06)
+        }
+
+        .slot .sw {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03)
+        }
+
+        .slot .meta {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slot .controls {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .slot .delete-btn {
+            background: transparent;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            padding: 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--danger);
+            font-weight: 700;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        .btn {
+            background: linear-gradient(180deg, var(--accent), var(--accent-700));
+            padding: 8px 10px;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn.ghost {
+            background: transparent;
+            border: 1px solid rgba(16, 24, 40, 0.06);
+            color: var(--muted);
+        }
+
+        .btn.small {
+            padding: 6px 8px;
+            font-size: 13px
+        }
+
+        .topline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .calendar {
+            width: 300px
+        }
+
+        .month {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px
+        }
+
+        .cell {
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+            position: relative;
+            min-height: 46px;
+            background: transparent;
+            color: var(--muted)
+        }
+
+        .cell.today {
+            outline: 2px solid rgba(14, 165, 161, 0.18);
+            color: var(--accent-700);
+            font-weight: 700
+        }
+
+        .cell.selected::after {
+            content: "";
+            position: absolute;
+            bottom: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        .day-list {
+            flex: 1
+        }
+
+        .slot-block {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 8px 0
+        }
+
+        .small {
+            font-size: 12px;
+            color: var(--muted)
+        }
+
+        input,
+        select {
+            padding: 6px;
+            border-radius: 8px;
+            border: 1px solid rgba(2, 6, 23, 0.04);
+            background: transparent;
+            color: inherit
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        .section-wrap {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-left: 8px
+        }
+
+        .section-select {
+            background: linear-gradient(180deg, rgba(3, 105, 100, 0.03), rgba(3, 105, 100, 0.01));
+            border: 1px solid rgba(2, 6, 23, 0.04);
+            padding: 7px 12px;
+            border-radius: 10px;
+            color: var(--muted);
+            min-width: 160px;
+            cursor: pointer;
+        }
+
+        /* Firebase card theme + warning */
+        .firebase-card {
+            border-left: 4px solid transparent;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .firebase-card.warning {
+            background: var(--warning);
+            border-left-color: var(--warning-border);
+        }
+
+        .firebase-card .hint {
+            padding: 10px;
+            background: rgba(2, 6, 23, 0.02);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        @media(max-width:900px) {
+            .week-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            .calendar {
+                width: 100%
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <header>
+            <h1>Campus Connect — Timetable</h1>
+            <div class="tabs" id="right-controls">
+                <div class="tab active" id="tab-edit">Edit Weekly</div>
+                <div class="tab" id="tab-view">Daily View</div>
+                <div class="section-wrap" aria-hidden="false">
+                    <div id="section-select" class="section-select">Select Section</div>
+                    <div class="section-actions">
+                        <button id="btn-add-section" class="btn small">➕ Add Section</button>
+                        <button id="btn-refresh-sections" class="btn ghost small">⟳</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <!-- Editor page (admin) -->
+            <div class="card" id="page-edit">
+                <div class="topline" style="margin-bottom:10px">
+                    <div>
+                        <strong>Weekly Editor</strong>
+                        <div class="small">Add & edit weekly timetable. Changes are saved to Firebase (per section).
+                        </div>
+                    </div>
+                    <div class="controls">
+                        <button class="btn" id="btn-save">Save to Firebase</button>
+                        <button class="btn ghost" id="btn-load">Load from Firebase</button>
+                        <button class="btn ghost" id="btn-clear">Clear</button>
+                    </div>
+                </div>
+
+                <div class="week-grid" id="week-grid"></div>
+
+                <div style="margin-top:12px; display:flex; gap:8px; align-items:center;flex-wrap:wrap">
+                    <div class="small">Add slot to:</div>
+                    <select id="add-day">
+                        <option>Monday</option>
+                        <option>Tuesday</option>
+                        <option>Wednesday</option>
+                        <option>Thursday</option>
+                        <option>Friday</option>
+                        <option>Saturday</option>
+                        <option>Sunday</option>
+                    </select>
+                    <input id="subject" placeholder="Subject / Title" />
+                    <input id="start" type="time" />
+                    <input id="end" type="time" />
+                    <button class="btn" id="btn-add">Add</button>
+                </div>
+            </div>
+
+            <!-- Viewer page -->
+            <div class="card" id="page-view" style="display:none">
+                <div class="topline" style="margin-bottom:10px">
+                    <div>
+                        <strong>Daily Viewer</strong>
+                        <div class="small">Click a day on the calendar or choose Today.</div>
+                    </div>
+                    <div class="controls">
+                        <button class="btn" id="btn-today">Today</button>
+                        <button class="btn ghost" id="btn-sync">Load from Firebase</button>
+                    </div>
+                </div>
+
+                <div class="day-view">
+                    <div class="calendar card" id="calendar-card">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                            <button class="btn ghost" id="prev-month">‹</button>
+                            <div id="month-label"></div>
+                            <button class="btn ghost" id="next-month">›</button>
+                        </div>
+                        <div class="month small" id="calendar-grid"></div>
+                    </div>
+
+                    <div class="day-list card" style="flex:1">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <div>
+                                <h3 id="selected-date"></h3>
+                                <div class="small" id="selected-dayname"></div>
+                            </div>
+                            <div class="small">Theme: <select id="theme-select">
+                                    <option>Default</option>
+                                    <option>Vibrant</option>
+                                    <option>Pastel</option>
+                                </select></div>
+                        </div>
+                        <div id="slots-container" style="margin-top:12px"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card small firebase-card" id="firebaseCard" style="margin-top:8px">
+                <div><strong></strong></div>
+                <div class="hint">
+
+                </div>
+                <div id="adminStatus" class="small" style="margin-top:8px;color:var(--accent-700)">Connecting to
+                    Firebase…</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+    <script>
+        // ----- Firebase config (unchanged) -----
+        const firebaseConfig = {
+            apiKey: "AIzaSyAFKmM22FUSQPYy-eMsBzcZN3bmAxglXl0",
+            authDomain: "smart-timetable-266fe.firebaseapp.com",
+            databaseURL: "https://smart-timetable-266fe-default-rtdb.firebaseio.com",
+            projectId: "smart-timetable-266fe",
+            storageBucket: "smart-timetable-266fe.firebasestorage.app",
+            messagingSenderId: "843230713835",
+            appId: "1:843230713835:web:b97d024f4fcf9a40ceabae",
+            measurementId: "G-DDY9NVEK8R"
+        };
+        // ----------------------------------------
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const rdb = firebase.database();
+
+        // pastel palette
+        const MODERN_PALETTE = ['#7DD3FC', '#A78BFA', '#FBCFE8', '#FDE68A', '#FBC47D', '#86EFAC', '#C7B2FF', '#FFDDD2', '#BFE3FF', '#D6F5E9'];
+
+        // ---------- Authentication helpers ----------
+        async function ensureSignedIn() {
+            if (window.appUser) return window.appUser;
+            try {
+                const cred = await auth.signInAnonymously();
+                window.appUser = cred.user;
+                document.getElementById('adminStatus').textContent = '✔ Connected to Firebase';
+                // remove warning styling if present
+                document.getElementById('firebaseCard').classList.remove('warning');
+                return window.appUser;
+            } catch (e) {
+                console.warn('anon sign-in failed', e);
+                // Show the specific message you asked for and mark the card as warning-themed
+                const statusEl = document.getElementById('adminStatus');
+                statusEl.textContent = '⚠ Anonymous Auth passed — continue in offline mode';
+                const card = document.getElementById('firebaseCard');
+                card.classList.add('warning');
+                return null;
+            }
+        }
+        async function tryAnonSignIn() { try { await ensureSignedIn(); await loadSections(); } catch (e) { console.warn('auto sign-in/load failed', e); } }
+
+        // ---------- App state ----------
+        const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        let timetable = {}; DAYS.forEach(d => timetable[d] = []);
+        let subjectColors = {};
+        let sections = [];
+        let selectedSection = null;
+
+        // DOM refs
+        const weekGrid = document.getElementById('week-grid');
+        const pageEdit = document.getElementById('page-edit');
+        const pageView = document.getElementById('page-view');
+        const tabEdit = document.getElementById('tab-edit');
+        const tabView = document.getElementById('tab-view');
+        const sectionSelectEl = document.getElementById('section-select');
+        const btnAddSection = document.getElementById('btn-add-section');
+        const btnRefreshSections = document.getElementById('btn-refresh-sections');
+
+        // ---------- color helpers ----------
+        function stringHash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i) | 0; return h; }
+        function assignColorIfMissing(subject) {
+            if (!subject) return '#888';
+            if (subjectColors[subject]) return subjectColors[subject];
+            const used = new Set(Object.values(subjectColors || {}));
+            let pick = MODERN_PALETTE.find(c => !used.has(c));
+            if (!pick) pick = MODERN_PALETTE[Math.abs(stringHash(subject)) % MODERN_PALETTE.length];
+            subjectColors[subject] = pick; return pick;
+        }
+        function getColorForSubject(subject) { if (!subject) return '#f97316'; if (subjectColors[subject]) return subjectColors[subject]; return assignColorIfMissing(subject); }
+        function hexToRgb(hex) { hex = (hex || '#ffffff').replace('#', ''); if (hex.length === 3) hex = hex.split('').map(c => c + c).join(''); const n = parseInt(hex, 16); return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 }; }
+        function luminance(hex) { const { r, g, b } = hexToRgb(hex); const sr = [r, g, b].map(v => v / 255).map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)); return 0.2126 * sr[0] + 0.7152 * sr[1] + 0.0722 * sr[2]; }
+        function readableTextColor(hex) { try { return luminance(hex) > 0.6 ? '#021018' : '#ffffff'; } catch (e) { return '#ffffff'; } }
+        function applyContrastToSlotElement(elem, bgHex) { const txt = readableTextColor(bgHex || '#ffffff'); elem.style.color = txt; const sw = elem.querySelector('.sw'); if (sw) sw.style.border = '1px solid rgba(0,0,0,0.06)'; }
+
+        // ---------- rendering ----------
+        function renderWeek() {
+            weekGrid.innerHTML = '';
+            DAYS.forEach(day => {
+                const d = document.createElement('div'); d.className = 'day';
+                const h = document.createElement('h3'); h.textContent = day; d.appendChild(h);
+                const list = document.createElement('div');
+                (timetable[day] || []).sort((a, b) => a.start.localeCompare(b.start)).forEach((slot, idx) => {
+                    const s = document.createElement('div'); s.className = 'slot';
+                    const color = getColorForSubject(slot.subject);
+                    s.style.background = 'rgba(255,255,255,0.02)';
+
+                    // slot html now includes delete button
+                    s.innerHTML = `
+                      <div class="sw" style="background:${color}"></div>
+                      <div class="meta">
+                        <div style="font-weight:700">${slot.subject}</div>
+                        <div class="small">${slot.start} — ${slot.end}</div>
+                      </div>
+                      <div class="controls">
+                        <button class="delete-btn" title="Delete class">🗑</button>
+                      </div>
+                    `;
+
+                    // set behaviour for whole slot (edit) and delete button
+                    s.title = 'Click subject to edit (or use trash to delete)';
+                    s.querySelector('.meta').onclick = (ev) => {
+                        ev.stopPropagation();
+                        editSlot(day, idx);
+                    };
+                    const delBtn = s.querySelector('.delete-btn');
+                    delBtn.onclick = (ev) => {
+                        ev.stopPropagation();
+                        if (!confirm(`Delete "${slot.subject}" (${slot.start}—${slot.end}) from ${day}?`)) return;
+                        timetable[day].splice(idx, 1);
+                        renderWeek();
+                        renderDay(currentDate);
+                    };
+
+                    applyContrastToSlotElement(s, color);
+                    list.appendChild(s);
+                });
+                d.appendChild(list); weekGrid.appendChild(d);
+            });
+        }
+
+        function editSlot(day, idx) {
+            const slot = (timetable[day] || [])[idx];
+            if (!slot) return;
+            const newSubject = prompt('Edit subject', slot.subject);
+            if (newSubject === null) return;
+            const newStart = prompt('Start time (HH:MM)', slot.start); if (newStart === null) return;
+            const newEnd = prompt('End time (HH:MM)', slot.end); if (newEnd === null) return;
+            timetable[day][idx] = { subject: newSubject, start: newStart, end: newEnd };
+            assignColorIfMissing(newSubject);
+            renderWeek(); renderDay(currentDate);
+        }
+
+        document.getElementById('btn-add').addEventListener('click', () => {
+            const day = document.getElementById('add-day').value;
+            const subject = document.getElementById('subject').value.trim();
+            const start = document.getElementById('start').value;
+            const end = document.getElementById('end').value;
+            if (!subject || !start || !end) { alert('Fill subject, start and end'); return; }
+            assignColorIfMissing(subject);
+            timetable[day].push({ subject, start, end });
+            document.getElementById('subject').value = ''; document.getElementById('start').value = ''; document.getElementById('end').value = '';
+            renderWeek();
+        });
+
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            if (!confirm('Clear local timetable?')) return;
+            DAYS.forEach(d => timetable[d] = []); subjectColors = {}; renderWeek(); renderDay(currentDate);
+        });
+
+        // ---------- sections: load / populate / create ----------
+        async function loadSections() {
+            try { await ensureSignedIn(); } catch (e) { console.warn('auth failed when loading sections', e); }
+            try {
+                const snap = await rdb.ref('sections/').once('value');
+                const data = snap.val() || {};
+                sections = Object.keys(data);
+                populateSectionDropdown();
+                const saved = localStorage.getItem('selectedSection');
+                if (saved && sections.includes(saved)) { selectSection(saved); }
+                else if (sections.length > 0) { selectSection(sections[0]); }
+            } catch (e) { console.error('loadSections failed', e); document.getElementById('adminStatus').textContent = 'Failed to load sections'; }
+        }
+
+        function populateSectionDropdown() {
+            if (!sections || sections.length === 0) {
+                sectionSelectEl.textContent = 'Select Section';
+            } else {
+                const s = selectedSection || sections[0];
+                sectionSelectEl.textContent = s ? `Section: ${s}` : 'Select Section';
+            }
+        }
+
+        async function promptAndCreateSection() {
+            const overlay = document.createElement('div');
+            overlay.style.position = 'fixed';
+            overlay.style.left = '0';
+            overlay.style.top = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.display = 'flex';
+            overlay.style.alignItems = 'center';
+            overlay.style.justifyContent = 'center';
+            overlay.style.background = 'rgba(0,0,0,0.35)';
+            overlay.style.zIndex = 99999;
+
+            const box = document.createElement('div');
+            box.style.background = 'var(--bg-2)';
+            box.style.padding = '16px';
+            box.style.borderRadius = '10px';
+            box.style.minWidth = '320px';
+            box.style.boxShadow = '0 8px 32px rgba(2,6,23,0.08)';
+
+            box.innerHTML = `
+    <h3 style="margin:0 0 8px 0">Create new section</h3>
+    <div class="small" style="margin-bottom:10px">Enter a unique section name (e.g. CSE-A). Avoid '/' '.' '#' '$' '[' or ']'.</div>
+  `;
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Section name (e.g. CSE-A)';
+            input.style.width = '100%';
+            input.style.padding = '8px';
+            input.style.borderRadius = '8px';
+            input.style.border = '1px solid rgba(2,6,23,0.06)';
+            input.style.marginBottom = '8px';
+            box.appendChild(input);
+
+            const row = document.createElement('div');
+            row.style.display = 'flex';
+            row.style.gap = '8px';
+            row.style.justifyContent = 'flex-end';
+
+            const cancel = document.createElement('button');
+            cancel.className = 'btn ghost small';
+            cancel.textContent = 'Cancel';
+            cancel.onclick = () => { try { document.body.removeChild(overlay); } catch (e) { } };
+
+            const createBtn = document.createElement('button');
+            createBtn.className = 'btn small';
+            createBtn.textContent = 'Create';
+            createBtn.onclick = async () => {
+                const raw = (input.value || '').trim();
+                if (!raw) { alert('Enter a section name'); return; }
+                const forbidden = ['/', '.', '#', '$', '[', ']'];
+                for (const ch of forbidden) if (raw.includes(ch)) { alert('Section name contains invalid character: ' + ch); return; }
+                const key = raw;
+                try {
+                    await ensureSignedIn();
+                } catch (e) { alert('Sign-in failed — cannot create section'); return; }
+                try {
+                    const snap = await rdb.ref('sections/' + encodeKey(key)).once('value');
+                    if (snap.exists()) {
+                        alert('Section already exists. Selecting it now.');
+                        await loadSections();
+                        selectSection(key);
+                        try { document.body.removeChild(overlay); } catch (e) { }
+                        return;
+                    }
+                    const payload = { timetable: {}, subjectColors: {} };
+                    await rdb.ref('sections/' + encodeKey(key)).set(payload);
+                    await loadSections();
+                    selectSection(key);
+                    try { document.body.removeChild(overlay); } catch (e) { }
+                    alert('Section created: ' + key);
+                } catch (err) {
+                    console.error('createSection failed', err);
+                    alert('Create failed: ' + (err && err.message));
+                }
+            };
+
+            row.appendChild(cancel);
+            row.appendChild(createBtn);
+            box.appendChild(row);
+            overlay.appendChild(box);
+            document.body.appendChild(overlay);
+
+            setTimeout(() => input.focus(), 60);
+        }
+
+        function encodeKey(k) { return encodeURIComponent(k); }
+        function decodeKey(k) { try { return decodeURIComponent(k); } catch (e) { return k; } }
+
+        async function selectSection(name) {
+            if (!name) return;
+            selectedSection = name;
+            localStorage.setItem('selectedSection_admin', name);
+            sectionSelectEl.textContent = `Section: ${name}`;
+            await loadSectionData(name);
+        }
+
+        async function loadSectionData(name) {
+            try { await ensureSignedIn(); } catch (e) { console.warn('auth failed when loading section data', e); }
+            try {
+                const snap = await rdb.ref('sections/' + encodeKey(name)).once('value');
+                const data = snap.val();
+                if (data) { timetable = data.timetable || {}; DAYS.forEach(d => { timetable[d] = timetable[d] || []; }); subjectColors = data.subjectColors || {}; }
+                else { timetable = {}; DAYS.forEach(d => timetable[d] = []); subjectColors = {}; }
+                renderWeek(); renderMonth(); renderDay(currentDate);
+            } catch (e) { console.error('loadSectionData failed', e); alert('Load section data failed: ' + (e && e.message)); }
+        }
+
+        async function saveSectionData() {
+            if (!selectedSection) { alert('Select or create a section first.'); return; }
+            try { await ensureSignedIn(); } catch (e) { alert('Sign-in failed'); return; }
+            const key = selectedSection;
+            try {
+                await rdb.ref('sections/' + encodeKey(key)).set({ timetable, subjectColors, updated: firebase.database.ServerValue.TIMESTAMP });
+                alert('Saved section: ' + key);
+            } catch (e) { console.error('saveSectionData failed', e); alert('Save failed: ' + (e && e.message)); }
+        }
+
+        async function manualLoadSection() { if (!selectedSection) { alert('Select a section first.'); return; } await loadSectionData(selectedSection); alert('Loaded section: ' + selectedSection); }
+
+        document.getElementById('btn-save').addEventListener('click', saveSectionData);
+        document.getElementById('btn-load').addEventListener('click', async () => { try { await ensureSignedIn(); await manualLoadSection(); } catch (e) { alert('Load failed: ' + (e && e.message)); } });
+
+        // enhanced clickable menu for many sections
+        sectionSelectEl.addEventListener('click', async (ev) => {
+            const existing = document.getElementById('_cc_section_menu');
+            if (existing) try { document.body.removeChild(existing); } catch (e) { }
+
+            const menu = document.createElement('div');
+            menu.id = '_cc_section_menu';
+            menu.style.position = 'absolute';
+            const rect = sectionSelectEl.getBoundingClientRect();
+            const left = Math.max(8, rect.left);
+            menu.style.left = (left) + 'px';
+            menu.style.top = (rect.bottom + 8) + 'px';
+            menu.style.background = 'var(--bg-2)';
+            menu.style.border = '1px solid rgba(2,6,23,0.04)';
+            menu.style.padding = '8px';
+            menu.style.borderRadius = '8px';
+            menu.style.zIndex = 99999;
+            menu.style.minWidth = '220px';
+            menu.style.maxWidth = Math.min(420, window.innerWidth - 40) + 'px';
+            menu.style.boxShadow = '0 12px 36px rgba(2,6,23,0.08)';
+
+            const listWrap = document.createElement('div');
+            listWrap.style.maxHeight = '300px';
+            listWrap.style.overflow = 'auto';
+            listWrap.style.paddingRight = '6px';
+
+            if (!sections || sections.length === 0) {
+                const p = document.createElement('div'); p.className = 'small'; p.textContent = 'No sections yet.'; listWrap.appendChild(p);
+            } else {
+                sections.forEach(s => {
+                    const item = document.createElement('div');
+                    item.textContent = s;
+                    item.style.padding = '8px';
+                    item.style.cursor = 'pointer';
+                    item.style.borderRadius = '6px';
+                    item.style.display = 'flex';
+                    item.style.justifyContent = 'space-between';
+                    item.style.alignItems = 'center';
+                    item.onmouseenter = () => item.style.background = 'rgba(14,165,161,0.06)';
+                    item.onmouseleave = () => item.style.background = 'transparent';
+
+                    const selectBtn = document.createElement('button');
+                    selectBtn.className = 'btn ghost small';
+                    selectBtn.textContent = 'Select';
+                    selectBtn.onclick = (e) => { e.stopPropagation(); selectSection(s); try { document.body.removeChild(menu); } catch (e) { }; };
+
+                    const del = document.createElement('button');
+                    del.className = 'btn ghost small';
+                    del.style.marginLeft = '8px';
+                    del.textContent = 'Delete';
+                    del.onclick = async (ev) => {
+                        ev.stopPropagation();
+                        if (!confirm('Delete section "' + s + '" and all its data? This cannot be undone.')) return;
+                        try { await ensureSignedIn(); await rdb.ref('sections/' + encodeKey(s)).remove(); await loadSections(); alert('Deleted ' + s); } catch (err) { console.error('delete failed', err); alert('Delete failed: ' + (err && err.message)); }
+                    };
+
+                    const right = document.createElement('div');
+                    right.style.display = 'flex';
+                    right.style.gap = '6px';
+                    right.appendChild(selectBtn);
+                    right.appendChild(del);
+
+                    item.appendChild(right);
+                    item.onclick = () => { selectSection(s); try { document.body.removeChild(menu); } catch (e) { }; };
+                    listWrap.appendChild(item);
+                });
+            }
+
+            menu.appendChild(listWrap);
+
+            const foot = document.createElement('div');
+            foot.style.display = 'flex';
+            foot.style.gap = '8px';
+            foot.style.marginTop = '8px';
+            foot.style.justifyContent = 'space-between';
+
+            const addBtn = document.createElement('button');
+            addBtn.className = 'btn small';
+            addBtn.textContent = '➕ New';
+            addBtn.onclick = () => { try { document.body.removeChild(menu); } catch (e) { }; promptAndCreateSection(); };
+
+            const close = document.createElement('button');
+            close.className = 'btn ghost small';
+            close.textContent = 'Close';
+            close.onclick = () => { try { document.body.removeChild(menu); } catch (e) { } };
+
+            foot.appendChild(addBtn);
+            foot.appendChild(close);
+            menu.appendChild(foot);
+
+            document.body.appendChild(menu);
+
+            const onDocClick = (e) => {
+                if (!menu.contains(e.target) && e.target !== sectionSelectEl) {
+                    try { document.body.removeChild(menu); } catch (e) { }
+                    document.removeEventListener('click', onDocClick);
+                }
+            };
+            setTimeout(() => document.addEventListener('click', onDocClick), 0);
+        });
+
+        btnAddSection.addEventListener('click', promptAndCreateSection);
+        btnRefreshSections.addEventListener('click', loadSections);
+
+        tabEdit.addEventListener('click', () => { pageEdit.style.display = 'block'; pageView.style.display = 'none'; tabEdit.classList.add('active'); tabView.classList.remove('active'); });
+        tabView.addEventListener('click', () => { pageEdit.style.display = 'none'; pageView.style.display = 'block'; tabEdit.classList.remove('active'); tabView.classList.add('active'); });
+
+        let currentDate = new Date();
+        let viewingMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+
+        function renderMonth() {
+            const year = viewingMonth.getFullYear(); const month = viewingMonth.getMonth();
+            const grid = document.getElementById('calendar-grid'); grid.innerHTML = '';
+            const monthLabel = document.getElementById('month-label'); monthLabel.textContent = viewingMonth.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            weekdays.forEach(h => { const c = document.createElement('div'); c.className = 'cell small'; c.style.fontWeight = '600'; c.textContent = h; grid.appendChild(c); });
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            for (let i = 0; i < firstDayIndex; i++) { const blank = document.createElement('div'); blank.className = 'cell'; grid.appendChild(blank); }
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateObj = new Date(year, month, d); const c = document.createElement('div'); c.className = 'cell'; c.textContent = d;
+                if (isSameDay(dateObj, new Date())) c.classList.add('today');
+                if (isSameDay(dateObj, currentDate)) c.classList.add('selected');
+                c.onclick = () => { currentDate = new Date(dateObj); renderMonth(); renderDay(currentDate); };
+                grid.appendChild(c);
+            }
+        }
+
+        function isSameDay(a, b) { return a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+        document.getElementById('prev-month').addEventListener('click', () => { viewingMonth = new Date(viewingMonth.getFullYear(), viewingMonth.getMonth() - 1, 1); renderMonth(); });
+        document.getElementById('next-month').addEventListener('click', () => { viewingMonth = new Date(viewingMonth.getFullYear(), viewingMonth.getMonth() + 1, 1); renderMonth(); });
+        document.getElementById('btn-today').addEventListener('click', () => { currentDate = new Date(); viewingMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1); renderMonth(); renderDay(currentDate); });
+
+        function renderDay(date) {
+            const sel = document.getElementById('selected-date');
+            const dayname = document.getElementById('selected-dayname');
+            sel.textContent = date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+            dayname.textContent = date.toLocaleDateString();
+            const dayOfWeek = date.toLocaleDateString(undefined, { weekday: 'long' });
+            const container = document.getElementById('slots-container'); container.innerHTML = '';
+            const slots = timetable[dayOfWeek] || [];
+            if (!slots.length) { container.innerHTML = '<div class="small">No slots for this day.</div>'; return; }
+            slots.sort((a, b) => a.start.localeCompare(b.start)).forEach(s => {
+                const color = getColorForSubject(s.subject);
+                const b = document.createElement('div'); b.className = 'slot-block';
+                b.style.background = color; b.style.color = readableTextColor(color);
+                b.innerHTML = `<div style="font-weight:700">${s.subject}</div><div class="small">${s.start} — ${s.end}</div>`;
+                container.appendChild(b);
+            });
+        }
+
+        renderWeek(); renderMonth(); renderDay(currentDate);
+        tryAnonSignIn();
+
+        window._timetable = timetable; window._subjectColors = subjectColors; window._sections = sections;
+    </script>
+</body>
+
+</html>

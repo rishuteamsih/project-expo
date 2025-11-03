@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>💬 Private Chat – Campus Connect</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #ece5dd;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      background: #128c7e;
+      color: #fff;
+    }
+
+    #backBtn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      color: #128c7e;
+      font-weight: bold;
+      font-size: 15px;
+    }
+
+    #friendName {
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    #searchBar {
+      margin: 8px;
+      padding: 8px 12px;
+      border-radius: 20px;
+      border: none;
+      outline: none;
+      width: calc(100% - 16px);
+      box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+    }
+
+    #chatList {
+      flex: 1;
+      overflow-y: auto;
+      background: #fff;
+    }
+
+    .chat-item {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.2s;
+    }
+
+    .chat-item:hover {
+      background: #f5f5f5;
+    }
+
+    .chat-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chat-name {
+      font-weight: 600;
+    }
+
+    .chat-last {
+      font-size: 13px;
+      opacity: 0.7;
+    }
+
+    .chat-time {
+      font-size: 12px;
+      opacity: 0.6;
+    }
+
+    .unread {
+      background: #25d366;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 12px;
+      padding: 3px 7px;
+      font-weight: 600;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: none;
+      flex-direction: column;
+    }
+
+    .bubble {
+      margin: 6px 0;
+      padding: 10px 14px;
+      border-radius: 18px;
+      max-width: 70%;
+      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+      position: relative;
+    }
+
+    .mine {
+      background: #dcf8c6;
+      align-self: flex-end;
+    }
+
+    .theirs {
+      background: #fff;
+      align-self: flex-start;
+    }
+
+    .time {
+      font-size: 11px;
+      opacity: 0.7;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .tick {
+      font-size: 12px;
+      margin-left: 5px;
+    }
+
+    .seen {
+      color: #34b7f1;
+    }
+
+    .input-box {
+      display: flex;
+      padding: 8px 12px;
+      background: #f0f0f0;
+      align-items: center;
+    }
+
+    .input-box input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      outline: none;
+      border-radius: 20px;
+    }
+
+    .input-box button {
+      margin-left: 10px;
+      background: #128c7e;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .input-box button:hover {
+      background: #0d7568;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <button id="backBtn">←</button>
+    <div id="myAvatar" class="avatar"></div>
+    <div id="friendName">Chats</div>
+  </header>
+
+  <input id="searchBar" type="text" placeholder="Search or start new chat...">
+  <div id="chatList"></div>
+  <div id="messages"></div>
+  <div class="input-box">
+    <input id="msgInput" type="text" placeholder="Type a message...">
+    <button id="sendBtn">➤</button>
+  </div>
+
+  <script type="module">
+    import {
+      db, auth, requireAuth,
+      collection, addDoc, query, where, orderBy, onSnapshot,
+      serverTimestamp, updateDoc, doc, arrayUnion, getDoc, getDocs
+    } from "./server.js";
+
+    const msgInput = document.getElementById("msgInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const messagesDiv = document.getElementById("messages");
+    const chatListDiv = document.getElementById("chatList");
+    const searchBar = document.getElementById("searchBar");
+    const backBtn = document.getElementById("backBtn");
+    const friendNameDiv = document.getElementById("friendName");
+    const myAvatar = document.getElementById("myAvatar");
+
+    let user = null;
+    let currentChatId = null, currentFriend = null, unsubMsg = null;
+
+    // === Avatar generator ===
+    function getAvatarColor(name) {
+      const colors = ["#ffadad", "#ffd6a5", "#fdffb6", "#caffbf", "#9bf6ff", "#a0c4ff", "#bdb2ff", "#ffc6ff"];
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      return colors[Math.abs(hash) % colors.length];
+    }
+    function createAvatar(name) {
+      const initials = name ? name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "?";
+      const bg = getAvatarColor(name || "U");
+      return `<div style="background:${bg};width:40px;height:40px;border-radius:50%;
+        display:flex;align-items:center;justify-content:center;font-weight:700;color:#000;">${initials}</div>`;
+    }
+
+    backBtn.onclick = () => window.location.href = "index.html";
+
+    // ✅ Authenticate first
+    requireAuth(async (u) => {
+      user = u;
+      myAvatar.innerHTML = createAvatar(u.displayName || u.email || "User");
+      loadChats();
+    });
+
+    // === Load Chats (only where I'm a member) ===
+    function loadChats() {
+      const q = query(collection(db, "privateChats"), where("members", "array-contains", user.uid));
+      onSnapshot(q, async snap => {
+        chatListDiv.innerHTML = "";
+        const chats = snap.docs.map(d => ({ id: d.id, data: d.data() }))
+          .sort((a, b) => (b.data.lastUpdated?.toMillis?.() || 0) - (a.data.lastUpdated?.toMillis?.() || 0));
+
+        for (const chat of chats) {
+          const friendUid = chat.data.members.find(uid => uid !== user.uid);
+          const friendSnap = await getDoc(doc(db, "users", friendUid));
+          const friend = friendSnap.exists() ? friendSnap.data() : { name: "Unknown" };
+
+          const msgsSnap = await getDocs(collection(db, "privateChats", chat.id, "messages"));
+          let unread = 0;
+          msgsSnap.forEach(m => {
+            const d = m.data();
+            if (!d.seenBy?.includes(user.uid) && d.senderUid !== user.uid) unread++;
+          });
+
+          const avatar = createAvatar(friend.name);
+          const div = document.createElement("div");
+          const timeStr = chat.data.lastUpdated?.toDate?.()?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) || "";
+          div.className = "chat-item";
+          div.innerHTML = `
+            <div class="chat-info">
+              ${avatar}
+              <div>
+                <div class="chat-name">${friend.name}</div>
+                <div class="chat-last">${chat.data.lastMsg || "No messages yet"}</div>
+              </div>
+            </div>
+            <div style="text-align:right;">
+              <span class="chat-time">${timeStr}</span>
+              ${unread > 0 ? `<span class="unread">${unread}</span>` : ""}
+            </div>
+          `;
+          div.onclick = () => {
+            openChat(chat.id, friendUid, friend);
+            const badge = div.querySelector(".unread");
+            if (badge) badge.remove();
+          };
+          chatListDiv.appendChild(div);
+        }
+
+        // After chats load, also load all users below (for starting new chats)
+        loadAllUsers();
+      });
+    }
+
+    // === Load all users (for new chat / search) ===
+    async function loadAllUsers() {
+      const usersSnap = await getDocs(collection(db, "users"));
+      usersSnap.forEach(docSnap => {
+        const u = docSnap.data();
+        if (u.uid === user.uid) return;
+        const avatar = createAvatar(u.name);
+        const div = document.createElement("div");
+        div.className = "chat-item";
+        div.innerHTML = `
+          <div class="chat-info">
+            ${avatar}
+            <div>
+              <div class="chat-name">${u.name}</div>
+              <div class="chat-last">Start chat</div>
+            </div>
+          </div>
+        `;
+        div.onclick = () => startNewChat(u);
+        chatListDiv.appendChild(div);
+      });
+    }
+
+    // === Start New Chat ===
+    async function startNewChat(friend) {
+      const chatsRef = collection(db, "privateChats");
+      const allChats = await getDocs(chatsRef);
+      let chatId = null;
+      allChats.forEach(c => {
+        const members = c.data().members;
+        if (members && members.includes(user.uid) && members.includes(friend.uid)) chatId = c.id;
+      });
+      if (!chatId) {
+        const docRef = await addDoc(chatsRef, {
+          members: [user.uid, friend.uid],
+          created: serverTimestamp(),
+          lastMsg: "",
+          lastUpdated: serverTimestamp()
+        });
+        chatId = docRef.id;
+      }
+      openChat(chatId, friend.uid, friend);
+    }
+
+    // === Search users and chats ===
+    searchBar.addEventListener("input", async () => {
+      const qText = searchBar.value.trim().toLowerCase();
+      chatListDiv.innerHTML = "";
+      if (!qText) {
+        loadChats();
+        return;
+      }
+
+      const usersSnap = await getDocs(collection(db, "users"));
+      usersSnap.forEach(docSnap => {
+        const u = docSnap.data();
+        if (u.uid !== user.uid && (u.name || "").toLowerCase().includes(qText)) {
+          const avatar = createAvatar(u.name);
+          const div = document.createElement("div");
+          div.className = "chat-item";
+          div.innerHTML = `
+            <div class="chat-info">
+              ${avatar}
+              <div>
+                <div class="chat-name">${u.name}</div>
+                <div class="chat-last">Start chat</div>
+              </div>
+            </div>
+          `;
+          div.onclick = () => startNewChat(u);
+          chatListDiv.appendChild(div);
+        }
+      });
+    });
+
+    // === Open Chat ===
+    async function openChat(chatId, friendUid, friend) {
+      currentChatId = chatId; currentFriend = friend;
+      friendNameDiv.textContent = friend.name;
+      chatListDiv.style.display = "none";
+      messagesDiv.style.display = "flex";
+      searchBar.style.display = "none";
+
+      if (unsubMsg) unsubMsg();
+      const q = query(collection(db, "privateChats", chatId, "messages"), orderBy("timestamp"));
+      unsubMsg = onSnapshot(q, snap => {
+        messagesDiv.innerHTML = "";
+        snap.forEach(d => {
+          const m = d.data();
+          const div = document.createElement("div");
+          div.className = "bubble " + (m.senderUid === user.uid ? "mine" : "theirs");
+          const timeStr = m.timestamp?.toDate?.()?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || "";
+          let tickHtml = "";
+          if (m.senderUid === user.uid)
+            tickHtml = `<span class="tick ${m.seenBy?.includes(friendUid) ? 'seen' : ''}">✔✔</span>`;
+          div.innerHTML = `<div>${m.text}</div><div class="time">${timeStr}${tickHtml}</div>`;
+          messagesDiv.appendChild(div);
+          if (m.senderUid !== user.uid) markSeen(d.id);
+        });
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      });
+    }
+
+    // === Send Message ===
+    sendBtn.onclick = async () => {
+      const text = msgInput.value.trim();
+      if (!text || !currentChatId) return;
+      await addDoc(collection(db, "privateChats", currentChatId, "messages"), {
+        senderUid: user.uid,
+        text,
+        timestamp: serverTimestamp(),
+        seenBy: [user.uid]
+      });
+      await updateDoc(doc(db, "privateChats", currentChatId), {
+        lastMsg: text,
+        lastUpdated: serverTimestamp()
+      });
+      msgInput.value = "";
+    };
+
+    async function markSeen(docId) {
+      try {
+        await updateDoc(doc(db, "privateChats", currentChatId, "messages", docId), {
+          seenBy: arrayUnion(user.uid)
+        });
+      } catch (e) { console.log("Seen error:", e); }
+    }
+  </script>
+</body>
+
+</html>

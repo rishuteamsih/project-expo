@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Campus Connect – Class</title>
+    <link rel="icon" href="CAMPUS CONNECT.jpg" />
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        body {
+            background: #f2f4f8;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #18ab91;
+            color: #fff;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+            margin-bottom: 12px;
+        }
+
+        header h1 {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        header .muted {
+            font-size: 13px;
+            opacity: .95;
+            margin-top: 6px;
+        }
+
+        .btn-back {
+            position: absolute;
+            left: 20px;
+            top: 16px;
+            background: #fff;
+            color: #18ab91;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .dash-tabs {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto 12px;
+        }
+
+        .tabs-bar {
+            background: #198b6f;
+            color: #fff;
+            border-radius: 12px;
+            display: flex;
+            gap: 12px;
+            padding: 12px 14px;
+            align-items: center;
+            font-weight: 700;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+            max-width: 900px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 8px;
+            user-select: none;
+        }
+
+        .tab:hover {
+            opacity: .95;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        .tab.active {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 14px;
+        }
+
+        .scroll-box {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        #qaList.scroll-box {
+            max-height: 180px;
+        }
+
+        .scroll-box::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scroll-box::-webkit-scrollbar-thumb {
+            background: #18ab91;
+            border-radius: 4px;
+        }
+
+        .list-item {
+            border: 1px solid #eee;
+            background: #fafafa;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .muted {
+            font-size: 12px;
+            color: #666;
+            margin-top: 6px;
+        }
+
+        textarea,
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-top: 6px;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: none;
+            background: #18ab91;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn.secondary {
+            background: #fff;
+            color: #18ab91;
+            border: 1px solid #18ab91;
+        }
+
+        .reply-box {
+            margin-top: 8px;
+            background: #fff;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #eee;
+        }
+
+        @media (max-width:760px) {
+            .tabs-bar {
+                gap: 8px;
+                padding: 10px;
+            }
+
+            .btn-back {
+                left: 8px;
+                top: 10px;
+            }
+        }
+
+        /* small notice link style */
+        .index-link {
+            display: inline-block;
+            margin-top: 8px;
+            color: #0a7f6e;
+            background: #e6f7f4;
+            padding: 6px 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <button class="btn-back" id="btnBack">←</button>
+        <h1 id="classTitle">Class</h1>
+        <div id="classMeta" class="muted"></div>
+    </header>
+
+    <div class="dash-tabs">
+        <div class="tabs-bar" role="tablist">
+            <div class="tab active" data-tab="notices">📢 Notices</div>
+            <div class="tab" data-tab="assignments">📝 Assignments</div>
+            <div class="tab" data-tab="questions">💬 My Questions</div>
+            <div class="tab" data-tab="submissions">📤 My Submissions</div>
+            <div class="tab" data-tab="notes">📚 Notes</div>
+        </div>
+    </div>
+
+    <main>
+        <section id="sec-notices" class="card" style="display:block;">
+            <h3>📢 Class Notices</h3>
+            <div id="classNotices" class="scroll-box">
+                <div class="muted">Loading notices…</div>
+            </div>
+        </section>
+
+        <section id="sec-assignments" class="card" style="display:none;">
+            <h3>📝 Assignments</h3>
+            <div id="assignList" class="scroll-box">
+                <div class="muted">Loading assignments…</div>
+            </div>
+        </section>
+
+        <section id="sec-questions" class="card" style="display:none;">
+            <h3>💬 My Questions & Faculty Replies</h3>
+            <div id="qaList" class="scroll-box">
+                <div class="muted">Loading your questions…</div>
+            </div>
+        </section>
+
+        <section id="sec-submissions" class="card" style="display:none;">
+            <h3>📤 My Submissions</h3>
+            <div id="mySubmissions" class="scroll-box">
+                <div class="muted">Loading your submissions…</div>
+            </div>
+        </section>
+
+        <section id="sec-notes" class="card" style="display:none;">
+            <h3>📚 Class Notes (Download)</h3>
+            <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;margin-bottom:8px;">
+                <label class="muted">Sort:</label>
+                <select id="notesSort">
+                    <option value="desc">Newest first</option>
+                    <option value="asc">Oldest first</option>
+                </select>
+            </div>
+            <div id="notesList" class="scroll-box">
+                <div class="muted">Loading notes…</div>
+            </div>
+        </section>
+
+        <section id="sec-submit" class="card" style="display:none;">
+            <h3>✉️ Submit Assignment / Ask Question</h3>
+            <form id="submitForm" style="display:flex;flex-direction:column;gap:8px;max-width:760px;">
+                <label>Type</label>
+                <select id="submitType">
+                    <option value="submission">Submit Assignment</option>
+                    <option value="question">Ask Question</option>
+                </select>
+                <input id="submitFor" placeholder="Assignment ID (optional)" />
+                <input id="submitTitle" placeholder="Title (assignment name or question)" required />
+                <textarea id="submitMsg" rows="3" placeholder="Write message (answer or question)"></textarea>
+                <input type="file" id="submitFile" accept="image/*,.pdf" />
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <button class="btn" type="submit">Send</button>
+                    <button type="button" id="resetSubmit" class="btn secondary">Reset</button>
+                    <div id="submitStatus" class="muted" style="margin-left:auto"></div>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script type="module">
+        // --- imports (should match your server.js exports)
+        import {
+            requireAuth, db, storage,
+            collection, query, where, orderBy, onSnapshot,
+            addDoc, serverTimestamp, sRef, uploadBytesResumable, getDownloadURL,
+            doc, getDoc, getDocs
+        } from "./server.js";
+
+        // small DOM helper
+        const $id = id => document.getElementById(id);
+
+        // required nodes
+        const nodes = {
+            btnBack: $id('btnBack'),
+            classTitle: $id('classTitle'),
+            classMeta: $id('classMeta'),
+            classNotices: $id('classNotices'),
+            assignList: $id('assignList'),
+            qaList: $id('qaList'),
+            mySubmissions: $id('mySubmissions'),
+            notesList: $id('notesList'),
+            notesSort: $id('notesSort'),
+            submitForm: $id('submitForm'),
+            resetSubmit: $id('resetSubmit'),
+            submitStatus: $id('submitStatus')
+        };
+
+        if (typeof requireAuth !== 'function' || !db) {
+            console.error('server.js must export requireAuth and db');
+            alert('System error: required backend helpers missing. Check server.js and imports.');
+            throw new Error('Missing server.js exports: requireAuth/db');
+        }
+
+        // get class id from URL
+        const params = new URLSearchParams(location.search);
+        const classId = params.get('id') || params.get('classId');
+        if (!classId) {
+            alert('No class selected. Open this page from the dashboard with ?id=<CLASS_ID>');
+            location.href = 'index.html';
+            throw new Error('Missing classId in URL');
+        }
+
+        // Tab switching
+        document.querySelectorAll('[data-tab]').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const key = tab.getAttribute('data-tab');
+                ['notices', 'assignments', 'questions', 'submissions', 'notes'].forEach(k => {
+                    const el = $id('sec-' + k);
+                    if (el) el.style.display = (k === key) ? 'block' : 'none';
+                });
+                const submitSection = $id('sec-submit');
+                if (submitSection) submitSection.style.display = (key === 'questions' || key === 'assignments') ? 'block' : 'none';
+                document.querySelectorAll('[data-tab]').forEach(t => t.classList.toggle('active', t === tab));
+            });
+        });
+
+        // defaults
+        document.querySelectorAll('[data-tab]')[0]?.classList.add('active');
+        $id('sec-notices').style.display = 'block';
+        $id('sec-submit').style.display = 'none';
+
+        function formatTS(ts) {
+            try {
+                if (!ts) return '';
+                if (typeof ts.toDate === 'function') return ts.toDate().toLocaleString();
+                if (typeof ts.toMillis === 'function') return new Date(ts.toMillis()).toLocaleString();
+                return new Date(ts).toLocaleString();
+            } catch (e) { return ''; }
+        }
+
+        let notesCache = [];
+        let me = null;
+
+        // back button
+        if (nodes.btnBack) nodes.btnBack.addEventListener('click', () => {
+            if (location.origin + '/index.html') window.location.href = 'index.html';
+            else history.back();
+        });
+
+        // Start after auth
+        requireAuth(async user => {
+            me = user;
+            if (me && me.email) $id('classMeta').textContent = 'Signed in as ' + me.email;
+            await loadClassMeta();
+            initWatchers();
+            wireSubmitForm();
+        });
+
+        async function loadClassMeta() {
+            try {
+                const snap = await getDoc(doc(db, 'classes', classId));
+                if (!snap.exists()) { alert('Class not found.'); location.href = 'index.html'; return; }
+                const c = snap.data();
+                if (c) {
+                    nodes.classTitle.textContent = c.name || 'Class';
+                    nodes.classMeta.textContent = `Code: ${c.code || ''} · Members: ${(c.members || []).length || 0}`;
+                }
+            } catch (e) {
+                console.error('loadClassMeta failed', e);
+            }
+        }
+
+        function initWatchers() {
+            // Notices
+            try {
+                const qNotices = query(collection(db, 'classes', classId, 'notices'), orderBy('createdAt', 'desc'));
+                onSnapshot(qNotices, ns => {
+                    nodes.classNotices.innerHTML = '';
+                    if (ns.empty) { nodes.classNotices.innerHTML = "<div class='muted'>No notices yet.</div>"; return; }
+                    ns.forEach(d => {
+                        const n = d.data();
+                        const div = document.createElement('div'); div.className = 'list-item';
+                        div.innerHTML = `<strong>${escapeHtml(n.title)}</strong>
+              <div style="margin-top:6px;">${escapeHtml(n.message)}</div>
+              ${n.fileURL ? `<div style="margin-top:8px;"><a href="${n.fileURL}" target="_blank" rel="noopener">📎 ${escapeHtml(n.fileName || 'Attachment')}</a></div>` : ''}
+              <div class="muted" style="margin-top:8px;">Posted: ${formatTS(n.createdAt)}${n.authorEmail ? ' • ' + escapeHtml(n.authorEmail) : ''}</div>`;
+                        nodes.classNotices.appendChild(div);
+                    });
+                });
+            } catch (e) { console.error('notices watcher failed', e); }
+
+            // Assignments
+            try {
+                const qAssign = query(collection(db, 'classes', classId, 'assignments'), orderBy('createdAt', 'desc'));
+                onSnapshot(qAssign, snap => {
+                    nodes.assignList.innerHTML = '';
+                    if (snap.empty) { nodes.assignList.innerHTML = "<div class='muted'>No assignments yet.</div>"; return; }
+                    snap.forEach(docSnap => {
+                        const a = docSnap.data(); const id = docSnap.id;
+                        const div = document.createElement('div'); div.className = 'list-item';
+                        div.innerHTML = `<strong>${escapeHtml(a.title)}</strong>
+              <div style="margin-top:6px;">${escapeHtml(a.description || '')}</div>
+              ${a.fileURL ? `<div style="margin-top:8px;"><a href="${a.fileURL}" target="_blank" rel="noopener">📎 ${escapeHtml(a.fileName || 'Attachment')}</a></div>` : ''}
+              <div class="muted" style="margin-top:8px;">Posted: ${formatTS(a.createdAt)}${a.dueDate ? ' • Due: ' + escapeHtml(a.dueDate) : ''}</div>
+              <div style="margin-top:8px;"><button class="btn secondary" data-assign="${id}">Submit / Ask</button></div>`;
+                        nodes.assignList.appendChild(div);
+                    });
+                    nodes.assignList.querySelectorAll('[data-assign]').forEach(b => {
+                        b.onclick = () => {
+                            const aid = b.getAttribute('data-assign');
+                            const submitFor = $id('submitFor');
+                            if (submitFor) submitFor.value = aid;
+                            const tab = Array.from(document.querySelectorAll('[data-tab]')).find(t => t.getAttribute('data-tab') === 'questions');
+                            tab?.click();
+                            const submitSection = $id('sec-submit'); if (submitSection) submitSection.style.display = 'block';
+                        };
+                    });
+                });
+            } catch (e) { console.error('assignments watcher failed', e); }
+
+            // My Questions
+            try {
+                if (!me) console.warn('User not yet available for questions watcher');
+                else {
+                    const qMyQ = query(collection(db, 'classes', classId, 'questions'), where('studentUid', '==', me.uid), orderBy('createdAt', 'desc'));
+                    onSnapshot(qMyQ, qsnap => {
+                        nodes.qaList.innerHTML = '';
+                        if (qsnap.empty) { nodes.qaList.innerHTML = "<div class='muted'>No questions yet.</div>"; return; }
+                        qsnap.forEach(docSnap => {
+                            const q = docSnap.data();
+                            const div = document.createElement('div'); div.className = 'list-item';
+                            div.innerHTML = `<strong>${escapeHtml(q.title || 'Question')}</strong>
+                <div style="margin-top:6px;">${escapeHtml(q.message || '')}</div>
+                ${q.fileURL ? `<div style="margin-top:8px;"><a href="${q.fileURL}" target="_blank" rel="noopener">📎 ${escapeHtml(q.fileName || 'Attachment')}</a></div>` : ''}
+                <div class="muted" style="margin-top:8px;">Asked: ${formatTS(q.createdAt)}</div>
+                ${q.reply ? `<div class="reply-box" style="margin-top:8px;"><strong>Faculty Reply</strong><div>${escapeHtml(q.reply)}</div></div>` : ''}`;
+                            nodes.qaList.appendChild(div);
+                        });
+                    });
+                }
+            } catch (e) { console.error('questions watcher failed', e); }
+
+            // My Submissions — add error handling + fallback (in case Firestore index required)
+            try {
+                if (!me) console.warn('User not yet available for submissions watcher');
+                else {
+                    const qSubs = query(collection(db, 'classes', classId, 'submissions'), where('studentUid', '==', me.uid), orderBy('createdAt', 'desc'));
+
+                    onSnapshot(qSubs,
+                        snap => {
+                            nodes.mySubmissions.innerHTML = '';
+                            if (snap.empty) { nodes.mySubmissions.innerHTML = "<div class='muted'>No submissions yet.</div>"; return; }
+                            snap.forEach(docSnap => {
+                                const s = docSnap.data();
+                                const div = document.createElement('div'); div.className = 'list-item';
+                                div.innerHTML = `<strong>${escapeHtml(s.title || 'Submission')}</strong>
+                    <div style="margin-top:6px;">${escapeHtml(s.message || '')}</div>
+                    ${s.fileURL ? `<div style="margin-top:8px;"><a href="${s.fileURL}" target="_blank" rel="noopener">📎 ${escapeHtml(s.fileName || 'File')}</a></div>` : ''}
+                    <div class="muted" style="margin-top:8px;">Submitted: ${formatTS(s.createdAt)}</div>`;
+                                nodes.mySubmissions.appendChild(div);
+                            });
+                        },
+                        async err => {
+                            console.error('submissions watcher error', err);
+                            const msg = err?.message || String(err);
+                            nodes.mySubmissions.innerHTML = `<div class="muted">Failed to fetch submissions: ${escapeHtml(msg)}</div>`;
+
+                            const linkMatch = (msg.match(/https?:\/\/console\.firebase\.google\.com[^\s)"]+/) || [null])[0];
+                            if (linkMatch) {
+                                const a = document.createElement('a');
+                                a.href = linkMatch;
+                                a.target = '_blank';
+                                a.rel = 'noopener';
+                                a.className = 'index-link';
+                                a.textContent = 'Create required Firestore index (console)';
+                                nodes.mySubmissions.appendChild(a);
+                            }
+
+                            // Fallback: fetch entire submissions collection and filter locally (use only if small)
+                            try {
+                                const fallbackMsg = document.createElement('div');
+                                fallbackMsg.className = 'muted';
+                                fallbackMsg.style.marginTop = '8px';
+                                fallbackMsg.textContent = 'Attempting a local fallback (may be slow for many submissions)...';
+                                nodes.mySubmissions.appendChild(fallbackMsg);
+
+                                const allSnap = await getDocs(collection(db, 'classes', classId, 'submissions'));
+                                const docs = allSnap.docs.map(d => ({ id: d.id, ...(d.data() || {}) }));
+                                const myDocs = docs.filter(x => x.studentUid === me.uid)
+                                    .sort((a, b) => {
+                                        const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+                                        const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+                                        return tb - ta;
+                                    });
+
+                                nodes.mySubmissions.innerHTML = '';
+                                if (!myDocs.length) {
+                                    nodes.mySubmissions.innerHTML = '<div class="muted">No submissions found (fallback). If you recently submitted, ensure it was saved correctly.</div>';
+                                } else {
+                                    myDocs.forEach(s => {
+                                        const div = document.createElement('div'); div.className = 'list-item';
+                                        div.innerHTML = `<strong>${escapeHtml(s.title || 'Submission')}</strong>
+                          <div style="margin-top:6px;">${escapeHtml(s.message || '')}</div>
+                          ${s.fileURL ? `<div style="margin-top:8px;"><a href="${s.fileURL}" target="_blank" rel="noopener">📎 ${escapeHtml(s.fileName || 'File')}</a></div>` : ''}
+                          <div class="muted" style="margin-top:8px;">Submitted: ${formatTS(s.createdAt)}</div>`;
+                                        nodes.mySubmissions.appendChild(div);
+                                    });
+                                }
+                            } catch (fallbackErr) {
+                                console.error('fallback fetch failed', fallbackErr);
+                                const fmsg = document.createElement('div'); fmsg.className = 'muted';
+                                fmsg.style.marginTop = '8px';
+                                fmsg.textContent = 'Fallback fetch failed. Please ask your admin to create the required Firestore index.';
+                                nodes.mySubmissions.appendChild(fmsg);
+                            }
+                        });
+                }
+            } catch (e) { console.error('submissions watcher failed', e); }
+
+            // Notes
+            try {
+                const qNotes = query(collection(db, 'classes', classId, 'notes'), orderBy('createdAt', 'desc'));
+                onSnapshot(qNotes, snap => {
+                    notesCache = [];
+                    snap.forEach(d => notesCache.push({ id: d.id, ...d.data() }));
+                    renderNotes();
+                });
+            } catch (e) { console.error('notes watcher failed', e); }
+        } // requireAuth end
+
+        // Render notes
+        function renderNotes() {
+            if (!nodes.notesList) return;
+            nodes.notesList.innerHTML = '';
+            if (!notesCache || notesCache.length === 0) { nodes.notesList.innerHTML = '<div class="muted">No notes available.</div>'; return; }
+            const sort = (nodes.notesSort && nodes.notesSort.value) ? nodes.notesSort.value : 'desc';
+            const arr = [...notesCache].sort((a, b) => {
+                const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+                const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+                return sort === 'asc' ? ta - tb : tb - ta;
+            });
+            arr.forEach(n => {
+                const div = document.createElement('div'); div.className = 'list-item';
+                div.innerHTML = `<strong>${escapeHtml(n.title)}</strong>
+          <div class="muted" style="margin-top:6px;">${formatTS(n.createdAt)}${n.uploaderEmail ? ' • ' + escapeHtml(n.uploaderEmail) : ''}</div>
+          <div style="margin-top:8px;">${n.description ? escapeHtml(n.description) + '<br>' : ''}${n.fileName ? `<em>File:</em> ${escapeHtml(n.fileName)}` : ''}</div>
+          ${n.fileURL ? `<div style="margin-top:8px;"><a href="${n.fileURL}" target="_blank" rel="noopener">⬇ Download</a></div>` : ''}`;
+                nodes.notesList.appendChild(div);
+            });
+        }
+
+        if (nodes.notesSort) nodes.notesSort.addEventListener('change', renderNotes);
+
+        // Submit form
+        function wireSubmitForm() {
+            const form = nodes.submitForm;
+            if (!form) return;
+            form.addEventListener('submit', async ev => {
+                ev.preventDefault();
+                if (!me) { alert('Not signed in'); return; }
+                const type = ($id('submitType')?.value) || 'question';
+                const forId = ($id('submitFor')?.value || null);
+                const title = ($id('submitTitle')?.value || '').trim();
+                const message = ($id('submitMsg')?.value || '').trim();
+                const fileInput = $id('submitFile');
+                const file = fileInput?.files?.[0];
+                let fileURL = '', fileName = '';
+                try {
+                    if (file) {
+                        const path = `classes/${classId}/submissions/${me.uid}_${Date.now()}_${file.name}`;
+                        const ref = sRef(storage, path);
+                        const up = await uploadBytesResumable(ref, file);
+                        fileURL = await getDownloadURL(up.ref);
+                        fileName = file.name;
+                    }
+                    if (type === 'question') {
+                        await addDoc(collection(db, 'classes', classId, 'questions'), {
+                            title: title || 'Question',
+                            message: message || '',
+                            fileURL, fileName,
+                            studentUid: me.uid, studentEmail: me.email || '',
+                            createdAt: serverTimestamp()
+                        });
+                        if (nodes.submitStatus) nodes.submitStatus.textContent = 'Question posted';
+                    } else {
+                        await addDoc(collection(db, 'classes', classId, 'submissions'), {
+                            title: title || 'Submission',
+                            message: message || '',
+                            fileURL, fileName,
+                            forAssignment: forId || null,
+                            studentUid: me.uid, studentEmail: me.email || '',
+                            createdAt: serverTimestamp()
+                        });
+                        if (nodes.submitStatus) nodes.submitStatus.textContent = 'Assignment submitted';
+                    }
+                    form.reset();
+                    setTimeout(() => { if (nodes.submitStatus) nodes.submitStatus.textContent = ''; }, 3000);
+                } catch (err) {
+                    console.error('submit failed', err);
+                    alert('Send failed: ' + (err.message || err));
+                }
+            });
+            if (nodes.resetSubmit) nodes.resetSubmit.addEventListener('click', () => { form.reset(); if (nodes.submitStatus) nodes.submitStatus.textContent = ''; });
+        }
+
+        // escape helper
+        function escapeHtml(str) {
+            if (!str && str !== 0) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
+</body>
+
+</html>
